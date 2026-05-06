@@ -8,7 +8,7 @@ import { createMulberry32, type InputEvent, type SeededRng, SimClock } from '@/p
 
 import type { WorldSnapshot, WorldState } from './WorldState';
 
-const DEFAULT_FIELD = { width: 960, height: 540 } as const;
+const DEFAULT_FIELD = { width: 1200, height: 900 } as const;
 
 function createInitialState(rng: SeededRng): WorldState {
   return {
@@ -28,7 +28,7 @@ function createInitialState(rng: SeededRng): WorldState {
       ],
       bar: createBar({
         x: DEFAULT_FIELD.width / 2,
-        y: DEFAULT_FIELD.height - 30,
+        y: DEFAULT_FIELD.height - 140,
         width: 120,
         height: 16,
       }),

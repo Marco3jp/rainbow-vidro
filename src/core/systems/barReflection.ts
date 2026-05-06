@@ -38,9 +38,12 @@ export function updateBarReflection(state: WorldState): void {
 
     const speed = Math.hypot(ball.vx, ball.vy);
     const normalizedOffset = clamp((ball.x - bar.x) / halfWidth, -1, 1);
-    const angle = normalizedOffset * state.config.barBounceMaxAngleRad;
-    ball.vx = speed * Math.sin(angle);
-    ball.vy = -Math.abs(speed * Math.cos(angle));
+    const maxVx = speed * Math.sin(state.config.barBounceMaxAngleRad);
+    const steering = normalizedOffset * maxVx;
+    const reflectedVx = clamp(ball.vx + steering, -maxVx, maxVx);
+    const reflectedVy = -Math.sqrt(Math.max(0, speed * speed - reflectedVx * reflectedVx));
+    ball.vx = reflectedVx;
+    ball.vy = reflectedVy;
     ball.y = top - ball.radius;
   }
 }

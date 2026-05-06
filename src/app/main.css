@@ -1,0 +1,34 @@
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  background: #0b0f19;
+}
+
+body {
+  display: grid;
+  place-items: center;
+}
+
+:root {
+  --viewport-safe-margin: 8px;
+}
+
+#app {
+  aspect-ratio: 16 / 9;
+  width: min(
+    calc(100vw - var(--viewport-safe-margin) * 2),
+    calc((100vh - var(--viewport-safe-margin) * 2) * 16 / 9)
+  );
+  max-width: calc(100vw - var(--viewport-safe-margin) * 2);
+  max-height: calc(100vh - var(--viewport-safe-margin) * 2);
+}
+
+#app canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: none !important;
+  touch-action: none !important;
+}
