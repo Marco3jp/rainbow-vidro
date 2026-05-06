@@ -1,4 +1,6 @@
 import { createBall } from '@/core/entities/Ball';
+import { createBar } from '@/core/entities/Bar';
+import { updateBar } from '@/core/systems/barControl';
 import { updateBalls } from '@/core/systems/movement';
 import { createMulberry32, type InputEvent, type SeededRng, SimClock } from '@/platform';
 
@@ -22,13 +24,12 @@ function createInitialState(rng: SeededRng): WorldState {
           radius: 8,
         }),
       ],
-      bar: {
+      bar: createBar({
         x: DEFAULT_FIELD.width / 2,
         y: DEFAULT_FIELD.height - 30,
         width: 120,
         height: 16,
-        mode: 'normal',
-      },
+      }),
       blocks: [],
       boss: {
         hp: 100,
@@ -72,10 +73,10 @@ export class World {
   }
 
   public tick(stepMs: number, inputs: ReadonlyArray<InputEvent>): void {
-    void inputs;
     this.state.tickCount += 1;
     this.state.elapsedMs += stepMs;
     this.clock.advance(stepMs);
+    updateBar(this.state, inputs);
     updateBalls(this.state, stepMs);
     this.state.rngState = this.rng.getState();
     if (this.state.phase === 'preparing') {
