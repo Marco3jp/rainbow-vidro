@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { World, type WorldState } from '@/core';
+import { charA, createCharacter, World, type WorldState } from '@/core';
 
 function createTestState(): WorldState {
   return {
@@ -11,7 +11,7 @@ function createTestState(): WorldState {
       bar: { x: 200, y: 180, width: 100, height: 20, mode: 'normal' },
       blocks: [],
       boss: { hp: 10, maxHp: 10 },
-      character: { hp: 10, maxHp: 10, attackPower: 1 },
+      character: createCharacter(charA),
     },
     field: { width: 400, height: 200 },
     rngState: 0,

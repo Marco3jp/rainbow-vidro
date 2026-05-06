@@ -1,3 +1,5 @@
+import type { CharacterState } from '@/core/entities';
+
 export interface BallState {
   id: string;
   x: number;
@@ -29,12 +31,6 @@ export interface BlockState {
 export interface BossState {
   hp: number;
   maxHp: number;
-}
-
-export interface CharacterState {
-  hp: number;
-  maxHp: number;
-  attackPower: number;
 }
 
 export interface WorldConfig {

@@ -1,5 +1,7 @@
 import { createBall } from '@/core/entities/Ball';
 import { createBar } from '@/core/entities/Bar';
+import { createCharacter } from '@/core/entities/Character';
+import { charA } from '@/core/data';
 import { updateBar } from '@/core/systems/barControl';
 import { updateBarReflection } from '@/core/systems/barReflection';
 import { updateBalls } from '@/core/systems/movement';
@@ -38,9 +40,7 @@ function createInitialState(rng: SeededRng): WorldState {
         maxHp: 100,
       },
       character: {
-        hp: 10,
-        maxHp: 10,
-        attackPower: 1,
+        ...createCharacter(charA),
       },
     },
     field: { ...DEFAULT_FIELD },
