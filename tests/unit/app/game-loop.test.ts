@@ -42,7 +42,7 @@ describe('GameLoop', () => {
     field: { width: 100, height: 100 },
     rngState: 0,
     nextBallId: 0,
-    config: { ballRadius: 8, ballSpeed: 300, wallDecayFactor: 0.85 },
+    config: { ballRadius: 8, ballSpeed: 300, wallDecayFactor: 0.85, barBounceMaxAngleRad: 1 },
   });
 
   it('100ms 経過で期待 tick 数を実行する', () => {

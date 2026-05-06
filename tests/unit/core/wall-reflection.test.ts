@@ -16,7 +16,7 @@ function createTestState(): WorldState {
     field: { width: 400, height: 200 },
     rngState: 0,
     nextBallId: 1,
-    config: { ballRadius: 8, ballSpeed: 300, wallDecayFactor: 0.85 },
+    config: { ballRadius: 8, ballSpeed: 300, wallDecayFactor: 0.85, barBounceMaxAngleRad: 1 },
   };
 }
 
@@ -42,6 +42,7 @@ describe('壁反射', () => {
     const world = new World({ seed: 1, initialState: state });
     world.tick(16, []);
     expect(world.state.entities.balls[0]?.damageMultiplier).toBe(1);
+    expect(world.state.entities.balls[0]?.bottomReflectPassthrough).toBe(true);
   });
 
   it('倍率は 1.0 未満にならない', () => {
@@ -52,5 +53,15 @@ describe('壁反射', () => {
     const world = new World({ seed: 1, initialState: state });
     world.tick(16, []);
     expect(world.state.entities.balls[0]?.damageMultiplier).toBe(1);
+  });
+
+  it('上壁反射で貫通フラグがリセットされる', () => {
+    const state = createTestState();
+    const ball = createBall({ id: 'b1', x: 200, y: 3, vx: 0, vy: -100, radius: 5 });
+    ball.bottomReflectPassthrough = true;
+    state.entities.balls = [ball];
+    const world = new World({ seed: 1, initialState: state });
+    world.tick(16, []);
+    expect(world.state.entities.balls[0]?.bottomReflectPassthrough).toBe(false);
   });
 });

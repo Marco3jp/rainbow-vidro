@@ -30,15 +30,18 @@ export function updateWallReflection(state: WorldState): void {
       ball.y = minY;
       ball.vy = abs(ball.vy);
       reflected = true;
+      ball.bottomReflectPassthrough = false;
     } else if (ball.y >= maxY) {
       ball.y = maxY;
       ball.vy = -abs(ball.vy);
       ball.damageMultiplier = 1;
+      ball.bottomReflectPassthrough = true;
       continue;
     }
 
     if (reflected) {
       ball.damageMultiplier = max(1, ball.damageMultiplier * state.config.wallDecayFactor);
+      ball.bottomReflectPassthrough = false;
     }
   }
 }

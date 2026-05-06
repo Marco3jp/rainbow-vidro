@@ -18,5 +18,6 @@ export function createBall(opts: CreateBallOptions): BallState {
     vy: opts.vy,
     radius: opts.radius,
     damageMultiplier: 1,
+    bottomReflectPassthrough: false,
   };
 }

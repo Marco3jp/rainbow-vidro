@@ -6,6 +6,7 @@ export interface BallState {
   vy: number;
   radius: number;
   damageMultiplier: number;
+  bottomReflectPassthrough: boolean;
 }
 
 export interface BarState {
@@ -40,6 +41,7 @@ export interface WorldConfig {
   ballRadius: number;
   ballSpeed: number;
   wallDecayFactor: number;
+  barBounceMaxAngleRad: number;
 }
 
 export interface WorldState {
