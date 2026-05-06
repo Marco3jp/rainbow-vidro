@@ -4,6 +4,8 @@
 
 UI 主要シナリオは Playwright で E2E テストを行う方針 ([`docs/testing.md`](../docs/testing.md))。ヘッドレス CI 実行も視野に入れる。
 
+> **NOTE**: 優先度 B (後回し) ([`docs/roadmap.md`](../docs/roadmap.md) G15)。インゲーム検証が一段落した後に着手する。Vitest による単体・統合テストは初期から行う。
+
 ## ゴール
 
 - `npm run test:e2e` で Playwright のテストが走り、最小 E2E が通る状態にする。

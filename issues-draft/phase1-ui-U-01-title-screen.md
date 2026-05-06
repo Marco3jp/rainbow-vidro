@@ -16,7 +16,8 @@
 1. `src/ui/scenes/TitleScene.ts` を作成する (Pixi or HTML/CSS、選択は実装者判断 — 軽量な HTML/CSS オーバーレイ推奨)。
 2. シード入力欄、キャラ選択 (今は1つ固定)、スタートボタンを配置する。
 3. シーン遷移の仕組み (`src/app/SceneManager.ts` 等) を整備する。タイトル → ゲーム → 結果 の遷移ができる構造にする。
-4. テスト:
+4. **Noto Sans JP の最低限の読み込み** を `index.html` 等に組み込む。`<link rel="preconnect">` + Google Fonts での読み込み (Regular のみで OK)。本格的なタイポグラフィ整備とレイアウトの精査は U-06 で行う。
+5. テスト:
    - シード未入力時はランダムシードが使われる
    - 入力されたシードが World に伝搬する
    - スタートボタンでゲームシーンに遷移する (E2E スモーク程度)

@@ -1,26 +1,34 @@
 # Issue 原稿一覧
 
-## Phase 1 (1stバージョン) — 詳細
+> 詳細な作業グループ・優先度区分は [`../docs/roadmap.md`](../docs/roadmap.md) の「Phase 1 の作業グループと優先度」を参照してください。本 INDEX では、Issue 一覧と、各 Issue がどの作業グループに属するかを併記します。
 
-### Foundation (基盤)
+## 凡例
+
+- **優先度 A**: インゲーム体験の検証に必要 (順次着手)
+- **優先度 B**: 後回し (インゲーム検証が一段落した後)
+
+## Phase 1 — 優先度 A
+
+### G1: プロジェクト基盤
 
 | ID | ファイル | 依存 |
 | --- | --- | --- |
 | F-01 | [phase1-foundation-F-01-project-setup.md](phase1-foundation-F-01-project-setup.md) | - |
 | F-02 | [phase1-foundation-F-02-vitest-setup.md](phase1-foundation-F-02-vitest-setup.md) | F-01 |
-| F-03 | [phase1-foundation-F-03-playwright-setup.md](phase1-foundation-F-03-playwright-setup.md) | F-01, F-02 |
 | F-04 | [phase1-foundation-F-04-ci.md](phase1-foundation-F-04-ci.md) | F-01, F-02 |
-| F-05 | [phase1-foundation-F-05-pages-deploy.md](phase1-foundation-F-05-pages-deploy.md) | F-01, F-04 |
-| F-06 | [phase1-foundation-F-06-pr-preview.md](phase1-foundation-F-06-pr-preview.md) | F-01, F-04, F-05 |
+
+### G2: 実行基盤
+
+| ID | ファイル | 依存 |
+| --- | --- | --- |
 | F-07 | [phase1-foundation-F-07-renderer-abstraction.md](phase1-foundation-F-07-renderer-abstraction.md) | F-01, F-02 |
 | F-08 | [phase1-foundation-F-08-game-loop.md](phase1-foundation-F-08-game-loop.md) | F-07 |
 | F-09 | [phase1-foundation-F-09-seeded-rng.md](phase1-foundation-F-09-seeded-rng.md) | F-01, F-02 |
 | F-10 | [phase1-foundation-F-10-clock.md](phase1-foundation-F-10-clock.md) | F-01, F-02 |
-| F-11 | [phase1-foundation-F-11-logger.md](phase1-foundation-F-11-logger.md) | F-01, F-02 |
+| F-11 | [phase1-foundation-F-11-logger.md](phase1-foundation-F-11-logger.md) (MVP に縮小) | F-01, F-02 |
 | F-12 | [phase1-foundation-F-12-input-source.md](phase1-foundation-F-12-input-source.md) | F-08 |
-| F-13 | [phase1-foundation-F-13-replay-foundation.md](phase1-foundation-F-13-replay-foundation.md) | F-09, F-12 |
 
-### Core Game (コアゲーム)
+### G3: World とボール・バー・壁反射
 
 | ID | ファイル | 依存 |
 | --- | --- | --- |
@@ -29,49 +37,100 @@
 | C-03 | [phase1-core-C-03-bar.md](phase1-core-C-03-bar.md) | C-01, F-12 |
 | C-04 | [phase1-core-C-04-wall-reflection.md](phase1-core-C-04-wall-reflection.md) | C-02 |
 | C-05 | [phase1-core-C-05-bar-reflection.md](phase1-core-C-05-bar-reflection.md) | C-02, C-03, C-04 |
-| C-06 | [phase1-core-C-06-block-hp.md](phase1-core-C-06-block-hp.md) | C-02, C-04, C-05, H-01 |
-| C-07 | [phase1-core-C-07-block-advance.md](phase1-core-C-07-block-advance.md) | C-06 |
-| C-08 | [phase1-core-C-08-player-hp-loss.md](phase1-core-C-08-player-hp-loss.md) | C-07, H-01 |
-| C-09 | [phase1-core-C-09-sling-charge.md](phase1-core-C-09-sling-charge.md) | C-02, C-03, F-12 |
-| C-10 | [phase1-core-C-10-charge-shot-multiplier.md](phase1-core-C-10-charge-shot-multiplier.md) | C-09 |
-| C-11 | [phase1-core-C-11-special-blocks.md](phase1-core-C-11-special-blocks.md) | C-06, H-01, H-08 |
-| C-12 | [phase1-core-C-12-boss-block.md](phase1-core-C-12-boss-block.md) | C-06 |
-| C-13 | [phase1-core-C-13-boss-core-block.md](phase1-core-C-13-boss-core-block.md) | C-08, C-12 |
-| C-14 | [phase1-core-C-14-enemy-skill.md](phase1-core-C-14-enemy-skill.md) | C-11, C-12 |
-| C-15 | [phase1-core-C-15-damage-formula.md](phase1-core-C-15-damage-formula.md) | C-04, C-06, C-10 |
 
-### Character (キャラクター)
+### G4: キャラ基礎・ブロック・敗北判定
 
 | ID | ファイル | 依存 |
 | --- | --- | --- |
 | H-01 | [phase1-character-H-01-character-stats.md](phase1-character-H-01-character-stats.md) | C-01 |
+| C-06 | [phase1-core-C-06-block-hp.md](phase1-core-C-06-block-hp.md) | C-02, C-04, C-05, H-01 |
+| C-15 | [phase1-core-C-15-damage-formula.md](phase1-core-C-15-damage-formula.md) | C-04, C-06 |
+| C-07 | [phase1-core-C-07-block-advance.md](phase1-core-C-07-block-advance.md) | C-06 |
+| C-08 | [phase1-core-C-08-player-hp-loss.md](phase1-core-C-08-player-hp-loss.md) | C-07, H-01 |
+
+### G5: スリング (湾曲・チャージショット)
+
+| ID | ファイル | 依存 |
+| --- | --- | --- |
+| C-09 | [phase1-core-C-09-sling-charge.md](phase1-core-C-09-sling-charge.md) | C-02, C-03, C-05, F-12 |
+| C-10 | [phase1-core-C-10-charge-shot-multiplier.md](phase1-core-C-10-charge-shot-multiplier.md) | C-09 |
+
+### G6: 試合構造 (ボス・敵スキル・勝利判定)
+
+| ID | ファイル | 依存 |
+| --- | --- | --- |
+| C-12 | [phase1-core-C-12-boss-block.md](phase1-core-C-12-boss-block.md) | C-06 |
+| C-11 | [phase1-core-C-11-special-blocks.md](phase1-core-C-11-special-blocks.md) | C-06, H-01, H-08 |
+| C-14 | [phase1-core-C-14-enemy-skill.md](phase1-core-C-14-enemy-skill.md) | C-11, C-12 |
+| C-13 | [phase1-core-C-13-boss-core-block.md](phase1-core-C-13-boss-core-block.md) | C-08, C-12 |
+
+### G7: スキルシステムとキャラスキル一式
+
+| ID | ファイル | 依存 |
+| --- | --- | --- |
 | H-02 | [phase1-character-H-02-mana.md](phase1-character-H-02-mana.md) | H-01 |
 | H-03 | [phase1-character-H-03-skill-system.md](phase1-character-H-03-skill-system.md) | H-01, H-02, F-09 |
+| H-08 | [phase1-character-H-08-exp-level.md](phase1-character-H-08-exp-level.md) | H-01, C-06 |
 | H-04 | [phase1-character-H-04-passive.md](phase1-character-H-04-passive.md) | H-03, H-05 |
 | H-05 | [phase1-character-H-05-skill-shot.md](phase1-character-H-05-skill-shot.md) | H-03, C-15 |
 | H-06 | [phase1-character-H-06-sling-buff.md](phase1-character-H-06-sling-buff.md) | H-03, C-09, C-10, C-06 |
 | H-07 | [phase1-character-H-07-ultimate-ball-clone.md](phase1-character-H-07-ultimate-ball-clone.md) | H-03, C-02 |
-| H-08 | [phase1-character-H-08-exp-level.md](phase1-character-H-08-exp-level.md) | H-01, C-06 |
 | H-09 | [phase1-character-H-09-skill-points-ui.md](phase1-character-H-09-skill-points-ui.md) | H-03, H-08, U-02 |
 
-### UI / Meta
+### G8: インゲーム最低限UI
 
 | ID | ファイル | 依存 |
 | --- | --- | --- |
 | U-01 | [phase1-ui-U-01-title-screen.md](phase1-ui-U-01-title-screen.md) | C-01, F-08 |
 | U-02 | [phase1-ui-U-02-hud.md](phase1-ui-U-02-hud.md) | C-01, H-01, H-03, H-08, H-09 |
-| U-03 | [phase1-ui-U-03-result-screen.md](phase1-ui-U-03-result-screen.md) | C-08, C-13, F-13 |
-| U-04 | [phase1-ui-U-04-match-history.md](phase1-ui-U-04-match-history.md) | U-03, F-13 |
-| U-05 | [phase1-ui-U-05-replay-playback.md](phase1-ui-U-05-replay-playback.md) | F-13, U-01, U-04 |
+| U-03 | [phase1-ui-U-03-result-screen.md](phase1-ui-U-03-result-screen.md) | C-08, C-13 |
+
+### G9: 公開・PRプレビュー (G1完了後並行可)
+
+| ID | ファイル | 依存 |
+| --- | --- | --- |
+| F-05 | [phase1-foundation-F-05-pages-deploy.md](phase1-foundation-F-05-pages-deploy.md) | F-01, F-04 |
+| F-06 | [phase1-foundation-F-06-pr-preview.md](phase1-foundation-F-06-pr-preview.md) | F-01, F-04, F-05 |
+
+## Phase 1 — 優先度 B (後回し)
+
+### G10: マッチヒストリー
+
+| ID | ファイル | 依存 |
+| --- | --- | --- |
+| U-04 | [phase1-ui-U-04-match-history.md](phase1-ui-U-04-match-history.md) | U-03 |
+
+### G11: フォント・UI整備
+
+| ID | ファイル | 依存 |
+| --- | --- | --- |
 | U-06 | [phase1-ui-U-06-fonts-styles.md](phase1-ui-U-06-fonts-styles.md) | U-01, U-02 |
 
-### Quality (品質)
+### G12: リプレイ基盤と再生UI
+
+| ID | ファイル | 依存 |
+| --- | --- | --- |
+| F-13 | [phase1-foundation-F-13-replay-foundation.md](phase1-foundation-F-13-replay-foundation.md) | F-09, F-12 |
+| U-05 | [phase1-ui-U-05-replay-playback.md](phase1-ui-U-05-replay-playback.md) | F-13, U-01, U-04 |
+
+### G13: オートプレイ・Fuzz
 
 | ID | ファイル | 依存 |
 | --- | --- | --- |
 | Q-01 | [phase1-quality-Q-01-autoplay-strategy.md](phase1-quality-Q-01-autoplay-strategy.md) | F-12, C-01 |
 | Q-02 | [phase1-quality-Q-02-headless-fuzz.md](phase1-quality-Q-02-headless-fuzz.md) | Q-01 |
+
+### G14: ロガー強化
+
+| ID | ファイル | 依存 |
+| --- | --- | --- |
 | Q-03 | [phase1-quality-Q-03-error-monitor-ui.md](phase1-quality-Q-03-error-monitor-ui.md) | F-11 |
+
+### G15: E2E テスト
+
+| ID | ファイル | 依存 |
+| --- | --- | --- |
+| F-03 | [phase1-foundation-F-03-playwright-setup.md](phase1-foundation-F-03-playwright-setup.md) | F-01, F-02 |
 
 ## Phase 2 以降 — 概要のみ
 
@@ -87,3 +146,7 @@
 - 内容を確認・修正の上で、GitHub Issue として手動 (もしくは別エージェント) で作成してください。
 - Issue 化が完了した原稿はこのディレクトリから削除し、コミットしてください。
 - すべて削除されたら `issues-draft/` ディレクトリ自体を削除してください。
+
+## 開発時の作業単位
+
+「あなた自身が作業すると仮定したグルーピング」については [`../docs/roadmap.md`](../docs/roadmap.md) を参照。各グループ単位で1〜数個の PR にまとめて作業を進める方針。

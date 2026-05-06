@@ -1,14 +1,17 @@
-# [Phase1][F-11] Logger / エラーモニタ (簡易自前)
+# [Phase1][F-11] Logger MVP (Console + 自動エラー収集)
 
 ## 背景
 
-外部 SaaS を使わず、ブラウザ実行時のエラーやログを自前で蓄積する。蓄積先は localStorage、ダウンロード機能で開発者が回収できるようにする ([`docs/architecture.md`](../docs/architecture.md) §10)。
+開発中のエラー追跡を最低限担保するため、起動直後から `window.onerror` / `unhandledrejection` を捕捉できる Logger を用意する ([`docs/architecture.md`](../docs/architecture.md) §10)。
+
+> **NOTE**: 本 Issue は MVP に絞り、localStorage 蓄積・ダウンロード UI は Q-03 (優先度 B) で扱う。インゲーム体験の検証を最優先とする方針 ([`docs/roadmap.md`](../docs/roadmap.md) Phase 1 の作業グループと優先度) に従う。
 
 ## ゴール
 
-- 簡易な `Logger` と `ErrorReporter` を提供する。
-- `window.onerror` / `unhandledrejection` を捕捉し、localStorage に蓄積する。
-- 開発用画面で蓄積ログを JSON ダウンロードできる。
+- `Logger` インタフェースを定義する。
+- ConsoleLogger 実装を提供する (debug/info/warn/error)。
+- `installErrorReporter(logger)` で `window.onerror` と `unhandledrejection` を捕捉して `logger.error` に流せる。
+- 起動時にこれを有効化する。
 
 ## 作業内容
 
@@ -28,28 +31,26 @@
      warn(msg: string, ctx?: Record<string, unknown>): void;
      error(msg: string, error?: unknown, ctx?: Record<string, unknown>): void;
    }
+   export function createConsoleLogger(): Logger;
+   export function installErrorReporter(logger: Logger): () => void; // 戻り値は uninstall 関数
    ```
-2. `ConsoleLogger` (開発時) と `BufferedLogger` (localStorage 蓄積) を実装する。
-   - `BufferedLogger` は最大件数 (例: 1000) でローテート。
-3. `installErrorReporter(logger: Logger)` 関数を提供する。
-   - `window.onerror`, `window.onunhandledrejection` を捕捉して `logger.error` に流す。
-4. ダウンロード機能:
-   - `exportLogsAsJson(): Blob` 関数で localStorage の蓄積を JSON として取り出せる。
-   - 開発者向け UI として、画面右上に小さな「Logs」ボタンを置く (隠しコマンドや `?debug=1` クエリでのみ表示でよい)。
+2. `ConsoleLogger` の実装。
+3. `installErrorReporter` の実装 (jsdom テストで動作確認できる形にする)。
+4. `src/app/main.ts` で起動時にロガーを構築・install する。
 5. テスト:
-   - `BufferedLogger` がローテートする
-   - `installErrorReporter` が `error` イベントを捕捉する (jsdom 環境でテスト)
+   - 各レベルで console の対応メソッドが呼ばれる
+   - `installErrorReporter` が `window.onerror` / `unhandledrejection` を捕捉して `logger.error` を呼ぶ
+   - `uninstall` でハンドラが解除される
 
 ## 受け入れ条件
 
 - [ ] テストが緑。
-- [ ] ブラウザでエラーを発生させると localStorage にログが蓄積される。
-- [ ] ダウンロード UI から JSON が取得できる (ヘッドレスや単純な確認でも可)。
+- [ ] ブラウザでエラーを発生させると console に整形ログが出る。
 
-## スコープ外
+## スコープ外 (Q-03 で扱う)
 
-- リプレイログ (F-13)
-- 外部エラーモニタ (将来検討)
+- localStorage への蓄積とローテート
+- ログのダウンロード UI
 
 ## 依存
 

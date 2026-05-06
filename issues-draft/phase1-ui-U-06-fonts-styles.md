@@ -1,8 +1,10 @@
-# [Phase1][U-06] フォント・基本スタイル (Noto Sans JP)
+# [Phase1][U-06] フォント・基本スタイル整備 (Noto Sans JP)
 
 ## 背景
 
 UI フォントは Noto Sans JP を採用する ([`docs/requirements.md`](../docs/requirements.md) §5)。最低限の CSS と文字レンダリングを整える。
+
+> **NOTE**: 優先度 B (後回し) ([`docs/roadmap.md`](../docs/roadmap.md) G11)。U-01 で Noto Sans JP の最低限読み込みは済ませる前提で、本 Issue では本格的なタイポグラフィ整備とレイアウトの精査を行う。
 
 ## ゴール
 

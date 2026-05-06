@@ -4,6 +4,8 @@
 
 オートプレイはバグ検出 (進行不可、クラッシュ) が主目的 ([`docs/architecture.md`](../docs/architecture.md) §9, [`docs/requirements.md`](../docs/requirements.md) §4)。1stバージョンでは単純戦略でゲームを完走できることを目標とする。
 
+> **NOTE**: 優先度 B (後回し) ([`docs/roadmap.md`](../docs/roadmap.md) G13)。インゲーム検証が一段落した後に着手する。
+
 ## ゴール
 
 - `AutoplayInputSource` を実装する (`InputSource` 互換)。

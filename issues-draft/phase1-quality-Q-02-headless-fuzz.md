@@ -4,6 +4,8 @@
 
 オートプレイをブラウザに加えて Node.js でも回せるようにし、大量シードで Fuzz テストを行う ([`docs/architecture.md`](../docs/architecture.md) §9 / [`docs/testing.md`](../docs/testing.md) §3)。
 
+> **NOTE**: 優先度 B (後回し) ([`docs/roadmap.md`](../docs/roadmap.md) G13)。Q-01 完了後に着手する。
+
 ## ゴール
 
 - `npm run fuzz` で Node.js から World と Autoplay を駆動できる。

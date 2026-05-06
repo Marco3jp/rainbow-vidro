@@ -4,6 +4,8 @@
 
 シード + 入力イベント列で完全再現可能な設計とする ([`docs/architecture.md`](../docs/architecture.md) §8)。バグ報告再現と Fuzz テストの土台になる。
 
+> **NOTE**: 優先度 B (後回し) ([`docs/roadmap.md`](../docs/roadmap.md) G12)。インゲーム検証が一段落した後に着手する。
+
 ## ゴール
 
 - 入力イベントを tick 番号付きで記録する `ReplayRecorder` を提供する。
