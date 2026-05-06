@@ -1,19 +1,83 @@
-import type { Clock, InputEvent } from '@/platform';
+import { createMulberry32, type InputEvent, type SeededRng, SimClock } from '@/platform';
 
 import type { WorldSnapshot, WorldState } from './WorldState';
 
+const DEFAULT_FIELD = { width: 960, height: 540 } as const;
+
+function createInitialState(rng: SeededRng): WorldState {
+  return {
+    tickCount: 0,
+    elapsedMs: 0,
+    phase: 'preparing',
+    entities: {
+      balls: [
+        {
+          id: 'ball-0',
+          x: DEFAULT_FIELD.width / 2,
+          y: DEFAULT_FIELD.height * 0.7,
+          vx: 160,
+          vy: -260,
+          radius: 8,
+        },
+      ],
+      bar: {
+        x: DEFAULT_FIELD.width / 2,
+        y: DEFAULT_FIELD.height - 30,
+        width: 120,
+        height: 16,
+        mode: 'normal',
+      },
+      blocks: [],
+      boss: {
+        hp: 100,
+        maxHp: 100,
+      },
+      character: {
+        hp: 10,
+        maxHp: 10,
+        attackPower: 1,
+      },
+    },
+    field: { ...DEFAULT_FIELD },
+    rngState: rng.getState(),
+    nextBallId: 1,
+    config: {
+      ballRadius: 8,
+      ballSpeed: 300,
+    },
+  };
+}
+
 export class World {
+  public readonly seed: number;
+  private readonly rng: SeededRng;
+  private readonly clock: SimClock;
   public readonly state: WorldState;
 
   public constructor(
-    initialState: WorldState = { frame: 0 },
-    private readonly clock?: Clock,
+    opts: {
+      seed?: number;
+      clock?: SimClock;
+      rng?: SeededRng;
+      initialState?: WorldState;
+    } = {},
   ) {
-    this.state = { ...initialState };
+    this.seed = opts.seed ?? 1;
+    this.rng = opts.rng ?? createMulberry32(this.seed);
+    this.clock = opts.clock ?? new SimClock();
+    this.state = structuredClone(opts.initialState ?? createInitialState(this.rng));
+    this.state.rngState = this.rng.getState();
   }
 
-  public tick(_stepMs: number, _inputs: ReadonlyArray<InputEvent>): void {
-    this.state.frame += 1;
+  public tick(stepMs: number, inputs: ReadonlyArray<InputEvent>): void {
+    void inputs;
+    this.state.tickCount += 1;
+    this.state.elapsedMs += stepMs;
+    this.clock.advance(stepMs);
+    this.state.rngState = this.rng.getState();
+    if (this.state.phase === 'preparing') {
+      this.state.phase = 'playing';
+    }
   }
 
   public snapshot(): WorldSnapshot {
@@ -21,6 +85,12 @@ export class World {
   }
 
   public now(): number {
-    return this.clock?.now() ?? 0;
+    return this.clock.now();
+  }
+
+  public nextBallId(): string {
+    const id = `ball-${this.state.nextBallId}`;
+    this.state.nextBallId += 1;
+    return id;
   }
 }
