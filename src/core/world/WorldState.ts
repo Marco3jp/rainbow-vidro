@@ -5,6 +5,7 @@ export interface BallState {
   vx: number;
   vy: number;
   radius: number;
+  damageMultiplier: number;
 }
 
 export interface BarState {
@@ -38,6 +39,7 @@ export interface CharacterState {
 export interface WorldConfig {
   ballRadius: number;
   ballSpeed: number;
+  wallDecayFactor: number;
 }
 
 export interface WorldState {

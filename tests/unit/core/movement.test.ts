@@ -16,7 +16,7 @@ function createTestState(): WorldState {
     field: { width: 400, height: 200 },
     rngState: 0,
     nextBallId: 1,
-    config: { ballRadius: 8, ballSpeed: 300 },
+    config: { ballRadius: 8, ballSpeed: 300, wallDecayFactor: 0.85 },
   };
 }
 

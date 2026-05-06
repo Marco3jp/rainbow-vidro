@@ -2,6 +2,7 @@ import { createBall } from '@/core/entities/Ball';
 import { createBar } from '@/core/entities/Bar';
 import { updateBar } from '@/core/systems/barControl';
 import { updateBalls } from '@/core/systems/movement';
+import { updateWallReflection } from '@/core/systems/wallReflection';
 import { createMulberry32, type InputEvent, type SeededRng, SimClock } from '@/platform';
 
 import type { WorldSnapshot, WorldState } from './WorldState';
@@ -47,6 +48,7 @@ function createInitialState(rng: SeededRng): WorldState {
     config: {
       ballRadius: 8,
       ballSpeed: 300,
+      wallDecayFactor: 0.85,
     },
   };
 }
@@ -78,6 +80,7 @@ export class World {
     this.clock.advance(stepMs);
     updateBar(this.state, inputs);
     updateBalls(this.state, stepMs);
+    updateWallReflection(this.state);
     this.state.rngState = this.rng.getState();
     if (this.state.phase === 'preparing') {
       this.state.phase = 'playing';
