@@ -28,6 +28,14 @@
       "linter": {
         "rules": {
           "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "pixi.js": "src/core から pixi.js を import しないでください"
+                }
+              }
+            },
             "noRestrictedGlobals": {
               "level": "error",
               "options": {
