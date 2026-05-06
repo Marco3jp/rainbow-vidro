@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { type FrameScheduler, GameLoop, type TimeSource } from '@/app/GameLoop';
-import type { World } from '@/core/world';
+import type { World, WorldState } from '@/core/world';
 import type { InputSource } from '@/platform';
 import type { Renderer } from '@/render';
 
@@ -28,10 +28,27 @@ class FakeScheduler implements FrameScheduler {
 }
 
 describe('GameLoop', () => {
+  const makeSnapshot = (): WorldState => ({
+    tickCount: 0,
+    elapsedMs: 0,
+    phase: 'playing',
+    entities: {
+      balls: [],
+      bar: { x: 0, y: 0, width: 100, height: 10, mode: 'normal' },
+      blocks: [],
+      boss: { hp: 10, maxHp: 10 },
+      character: { hp: 10, maxHp: 10, attackPower: 1 },
+    },
+    field: { width: 100, height: 100 },
+    rngState: 0,
+    nextBallId: 0,
+    config: { ballRadius: 8, ballSpeed: 300, wallDecayFactor: 0.85, barBounceMaxAngleRad: 1 },
+  });
+
   it('100ms 経過で期待 tick 数を実行する', () => {
     const world: Pick<World, 'tick' | 'snapshot'> = {
       tick: vi.fn(),
-      snapshot: vi.fn(() => ({ frame: 0 })),
+      snapshot: vi.fn(() => makeSnapshot()),
     };
     const renderer: Renderer = {
       mount: vi.fn(async () => {}),
@@ -62,7 +79,7 @@ describe('GameLoop', () => {
   it('大遅延時はスパイラル防止クランプが効く', () => {
     const world: Pick<World, 'tick' | 'snapshot'> = {
       tick: vi.fn(),
-      snapshot: vi.fn(() => ({ frame: 0 })),
+      snapshot: vi.fn(() => makeSnapshot()),
     };
     const renderer: Renderer = {
       mount: vi.fn(async () => {}),
