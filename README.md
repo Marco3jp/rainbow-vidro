@@ -11,7 +11,7 @@
 
 ## 開発状況
 
-現在は設計フェーズ。設計ドキュメントは [`docs/`](docs/) を参照してください。
+Phase 1 の基盤セットアップが完了し、ローカル開発コマンドが利用可能です。設計ドキュメントは [`docs/`](docs/) を参照してください。
 
 - [`docs/requirements.md`](docs/requirements.md) — 要件と前提
 - [`docs/game-design.md`](docs/game-design.md) — ゲームデザインの仕様
@@ -20,7 +20,7 @@
 - [`docs/testing.md`](docs/testing.md) — テスト戦略
 - [`docs/operations.md`](docs/operations.md) — リポジトリ運用ルール
 
-## 技術スタック (予定)
+## 技術スタック
 
 - TypeScript + Vite
 - レンダラ: PixiJS v8 (レンダラ抽象化レイヤ経由で利用)
@@ -29,7 +29,15 @@
 - CI/CD: GitHub Actions
 - Deploy: GitHub Pages
 
-具体的なバージョンや導入は次のセッションでセットアップします。
+## ローカル開発コマンド
+
+```bash
+npm install
+npm run dev
+npm run build
+npm run lint
+npm run typecheck
+```
 
 ## ライセンス
 

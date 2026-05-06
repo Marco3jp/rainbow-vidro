@@ -18,12 +18,20 @@
 
 - ランタイム: ブラウザ (PCブラウザのみ、PixiJSで描画)
 - 言語: TypeScript
-- ビルド: Vite (予定)
+- ビルド: Vite
 - パッケージマネージャ: npm
-- Lint/Format: Biome (予定)
+- Lint/Format: Biome
 - Test: Vitest (単体・統合) + Playwright (E2E、予定)
 
-> **NOTE**: 2026-05時点では Issue #1 (プロジェクトセットアップ) 完了前のため、`npm install` 等のコマンドはまだ動作しません。Issue #1 完了後にこのファイルを更新してください。
+> **NOTE**: 基本セットアップ完了済み。ローカル開発の基本コマンドは以下です。
+>
+> ```bash
+> npm install
+> npm run dev
+> npm run build
+> npm run lint
+> npm run typecheck
+> ```
 
 ## 必須ルール
 

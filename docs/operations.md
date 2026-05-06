@@ -71,7 +71,18 @@ GitHub Actions:
 
 ## 8. ローカル開発のセットアップ
 
-> Phase 1 の F-01 完了後にこのセクションを実手順で埋める。
+```bash
+npm install
+npm run dev
+```
+
+品質チェックとビルド:
+
+```bash
+npm run lint
+npm run typecheck
+npm run build
+```
 
 ## 9. デプロイ
 
