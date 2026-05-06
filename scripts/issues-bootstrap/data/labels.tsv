@@ -1,0 +1,34 @@
+name	color	description
+phase:1	0E8A16	Phase 1 (1stバージョン)
+phase:2	1D76DB	Phase 2 (アイテムブロック)
+phase:3	1D76DB	Phase 3 (インゲームアイテム)
+phase:4	1D76DB	Phase 4 (メインモード)
+phase:5	1D76DB	Phase 5 (キャラ・敵追加)
+group:G1	BFD4F2	G1: プロジェクト基盤
+group:G2	BFD4F2	G2: 実行基盤
+group:G3	BFD4F2	G3: World とボール・バー・壁反射
+group:G4	BFD4F2	G4: キャラ基礎・ブロック・敗北判定
+group:G5	BFD4F2	G5: スリング (湾曲・チャージショット)
+group:G6	BFD4F2	G6: 試合構造 (ボス・敵スキル・勝利判定)
+group:G7	BFD4F2	G7: スキルシステムとキャラスキル一式
+group:G8	BFD4F2	G8: インゲーム最低限UI
+group:G9	BFD4F2	G9: 公開・PRプレビュー
+group:G10	BFD4F2	G10: マッチヒストリー
+group:G11	BFD4F2	G11: フォント・UI整備
+group:G12	BFD4F2	G12: リプレイ基盤と再生UI
+group:G13	BFD4F2	G13: オートプレイ・Fuzz
+group:G14	BFD4F2	G14: ロガー強化
+group:G15	BFD4F2	G15: E2E テスト
+priority:A	D93F0B	優先度A (順次着手)
+priority:B	FBCA04	優先度B (後回し)
+area:foundation	C2E0C6	領域: 基盤
+area:core	C2E0C6	領域: コアゲーム
+area:character	C2E0C6	領域: キャラクター
+area:ui	C2E0C6	領域: UI
+area:quality	C2E0C6	領域: 品質
+type:setup	D4C5F9	種別: セットアップ
+type:feature	D4C5F9	種別: 機能実装
+type:test	D4C5F9	種別: テスト
+type:infra	D4C5F9	種別: インフラ
+type:docs	D4C5F9	種別: ドキュメント
+tracking	5319E7	グループ用トラッキングIssue
