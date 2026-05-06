@@ -37,6 +37,9 @@ npm run dev
 npm run build
 npm run lint
 npm run typecheck
+npm run test
+npm run test:watch
+npm run test:coverage
 ```
 
 ## ライセンス
