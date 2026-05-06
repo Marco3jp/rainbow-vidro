@@ -123,8 +123,10 @@ export class PixiRenderer implements Renderer {
     const prevBlocks = new Map(prev.entities.blocks.map((block) => [block.id, block]));
     for (const block of curr.entities.blocks) {
       const prevBlock = prevBlocks.get(block.id);
-      const drawX = prevBlock === undefined ? block.x : prevBlock.x + (block.x - prevBlock.x) * alpha;
-      const drawY = prevBlock === undefined ? block.y : prevBlock.y + (block.y - prevBlock.y) * alpha;
+      const drawX =
+        prevBlock === undefined ? block.x : prevBlock.x + (block.x - prevBlock.x) * alpha;
+      const drawY =
+        prevBlock === undefined ? block.y : prevBlock.y + (block.y - prevBlock.y) * alpha;
       g.rect(
         offsetX + (drawX - block.width / 2) * scale,
         offsetY + (drawY - block.height / 2) * scale,

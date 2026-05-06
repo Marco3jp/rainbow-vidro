@@ -1,4 +1,4 @@
 export * from './Ball';
 export * from './Bar';
-export * from './Character';
 export * from './Block';
+export * from './Character';

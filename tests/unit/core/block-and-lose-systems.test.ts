@@ -31,7 +31,9 @@ describe('ブロック衝突・前進・敗北判定', () => {
   it('ボール衝突でブロックHPが減る', () => {
     const state = createTestState();
     state.entities.balls = [createBall({ id: 'ball-1', x: 200, y: 120, vx: 0, vy: 60, radius: 8 })];
-    state.entities.blocks = [createBlock({ id: 'block-1', x: 200, y: 130, width: 60, height: 24, hp: 20 })];
+    state.entities.blocks = [
+      createBlock({ id: 'block-1', x: 200, y: 130, width: 60, height: 24, hp: 20 }),
+    ];
     const world = new World({ seed: 1, initialState: state });
     world.tick(16, []);
     expect(world.state.entities.blocks[0]?.hp).toBe(10);
@@ -55,7 +57,9 @@ describe('ブロック衝突・前進・敗北判定', () => {
       createBall({ id: 'ball-1', x: 180, y: 120, vx: 0, vy: 60, radius: 8 }),
       createBall({ id: 'ball-2', x: 220, y: 120, vx: 0, vy: 60, radius: 8 }),
     ];
-    state.entities.blocks = [createBlock({ id: 'block-1', x: 200, y: 130, width: 80, height: 24, hp: 20 })];
+    state.entities.blocks = [
+      createBlock({ id: 'block-1', x: 200, y: 130, width: 80, height: 24, hp: 20 }),
+    ];
     const world = new World({ seed: 1, initialState: state });
     world.tick(16, []);
     expect(world.state.entities.blocks).toHaveLength(0);
@@ -64,7 +68,9 @@ describe('ブロック衝突・前進・敗北判定', () => {
   it('ブロックは設定速度で前進する', () => {
     const state = createTestState();
     state.config.blockAdvanceSpeed = 50;
-    state.entities.blocks = [createBlock({ id: 'block-1', x: 200, y: 80, width: 60, height: 24, hp: 10 })];
+    state.entities.blocks = [
+      createBlock({ id: 'block-1', x: 200, y: 80, width: 60, height: 24, hp: 10 }),
+    ];
     const world = new World({ seed: 1, initialState: state });
     world.tick(1000, []);
     expect(world.state.entities.blocks[0]?.y).toBeCloseTo(130);
@@ -73,7 +79,9 @@ describe('ブロック衝突・前進・敗北判定', () => {
   it('下端到達ブロックはプレイヤーへダメージを与えて削除される', () => {
     const state = createTestState();
     state.config.blockAdvanceSpeed = 0;
-    state.entities.blocks = [createBlock({ id: 'block-1', x: 200, y: 195, width: 60, height: 20, hp: 10 })];
+    state.entities.blocks = [
+      createBlock({ id: 'block-1', x: 200, y: 195, width: 60, height: 20, hp: 10 }),
+    ];
     const world = new World({ seed: 1, initialState: state });
     world.tick(16, []);
     expect(world.state.entities.character.stats.hp).toBe(charA.baseStats.hp - 1);
@@ -84,7 +92,9 @@ describe('ブロック衝突・前進・敗北判定', () => {
     const state = createTestState();
     state.config.blockAdvanceSpeed = 0;
     state.config.blockReachDamage = charA.baseStats.hp;
-    state.entities.blocks = [createBlock({ id: 'block-1', x: 200, y: 195, width: 60, height: 20, hp: 10 })];
+    state.entities.blocks = [
+      createBlock({ id: 'block-1', x: 200, y: 195, width: 60, height: 20, hp: 10 }),
+    ];
     const world = new World({ seed: 1, initialState: state });
     world.tick(16, []);
     expect(world.state.phase).toBe('lost');

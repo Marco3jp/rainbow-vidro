@@ -1,12 +1,12 @@
+import { charA } from '@/core/data';
 import { createBall } from '@/core/entities/Ball';
 import { createBar } from '@/core/entities/Bar';
 import { createBlockGrid } from '@/core/entities/Block';
 import { createCharacter } from '@/core/entities/Character';
-import { charA } from '@/core/data';
-import { advanceBlocks } from '@/core/systems/blockAdvance';
-import { updateBlockCollision } from '@/core/systems/blockCollision';
 import { updateBar } from '@/core/systems/barControl';
 import { updateBarReflection } from '@/core/systems/barReflection';
+import { advanceBlocks } from '@/core/systems/blockAdvance';
+import { updateBlockCollision } from '@/core/systems/blockCollision';
 import { updateBalls } from '@/core/systems/movement';
 import { applyBlockReachedDamage } from '@/core/systems/playerDamage';
 import { updateWallReflection } from '@/core/systems/wallReflection';
