@@ -1,5 +1,7 @@
 # rainbow-vidro
 
+[![CI](https://github.com/Marco3jp/rainbow-vidro/actions/workflows/ci.yml/badge.svg)](https://github.com/Marco3jp/rainbow-vidro/actions/workflows/ci.yml)
+
 スリングアクションを取り入れたブロック崩しゲーム。スキルを持ったキャラクターを操作し、ギミックを仕掛けてくる敵と戦う、戦略性と爽快感を両立した1プレイ約10分のWebゲームです。
 
 ## 特徴 (予定)
