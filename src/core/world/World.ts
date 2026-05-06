@@ -4,7 +4,7 @@ import { updateBar } from '@/core/systems/barControl';
 import { updateBarReflection } from '@/core/systems/barReflection';
 import { updateBalls } from '@/core/systems/movement';
 import { updateWallReflection } from '@/core/systems/wallReflection';
-import { createMulberry32, type InputEvent, PI, type SeededRng, SimClock } from '@/platform';
+import { createMulberry32, type InputEvent, type SeededRng, SimClock } from '@/platform';
 
 import type { WorldSnapshot, WorldState } from './WorldState';
 
@@ -50,7 +50,7 @@ function createInitialState(rng: SeededRng): WorldState {
       ballRadius: 8,
       ballSpeed: 300,
       wallDecayFactor: 0.85,
-      barBounceMaxAngleRad: PI / 3,
+      barBounceMaxAngleRad: Math.PI / 3,
     },
   };
 }

@@ -1,5 +1,14 @@
 import type { WorldState } from '@/core/world';
-import { abs, clamp, cos, hypot, sin } from '@/platform';
+
+function clamp(value: number, min: number, max: number): number {
+  if (value < min) {
+    return min;
+  }
+  if (value > max) {
+    return max;
+  }
+  return value;
+}
 
 export function updateBarReflection(state: WorldState): void {
   const bar = state.entities.bar;
@@ -27,11 +36,11 @@ export function updateBarReflection(state: WorldState): void {
       continue;
     }
 
-    const speed = hypot(ball.vx, ball.vy);
+    const speed = Math.hypot(ball.vx, ball.vy);
     const normalizedOffset = clamp((ball.x - bar.x) / halfWidth, -1, 1);
     const angle = normalizedOffset * state.config.barBounceMaxAngleRad;
-    ball.vx = speed * sin(angle);
-    ball.vy = -abs(speed * cos(angle));
+    ball.vx = speed * Math.sin(angle);
+    ball.vy = -Math.abs(speed * Math.cos(angle));
     ball.y = top - ball.radius;
   }
 }

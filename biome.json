@@ -40,7 +40,7 @@
               "level": "error",
               "options": {
                 "deniedGlobals": {
-                  "Math": "src/core では seeded RNG を経由してください",
+                  "Math.random": "src/core では seeded RNG を経由してください",
                   "Date": "src/core では注入された clock を経由してください",
                   "performance": "src/core では注入された clock を経由してください"
                 }
