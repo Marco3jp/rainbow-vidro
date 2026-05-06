@@ -1,11 +1,16 @@
 import { createBall } from '@/core/entities/Ball';
 import { createBar } from '@/core/entities/Bar';
+import { createBlockGrid } from '@/core/entities/Block';
 import { createCharacter } from '@/core/entities/Character';
 import { charA } from '@/core/data';
+import { advanceBlocks } from '@/core/systems/blockAdvance';
+import { updateBlockCollision } from '@/core/systems/blockCollision';
 import { updateBar } from '@/core/systems/barControl';
 import { updateBarReflection } from '@/core/systems/barReflection';
 import { updateBalls } from '@/core/systems/movement';
+import { applyBlockReachedDamage } from '@/core/systems/playerDamage';
 import { updateWallReflection } from '@/core/systems/wallReflection';
+import { updateWinLosePhase } from '@/core/systems/winLoseCheck';
 import { createMulberry32, type InputEvent, type SeededRng, SimClock } from '@/platform';
 
 import type { WorldSnapshot, WorldState } from './WorldState';
@@ -34,7 +39,18 @@ function createInitialState(rng: SeededRng): WorldState {
         width: 120,
         height: 16,
       }),
-      blocks: [],
+      blocks: createBlockGrid({
+        rows: 4,
+        cols: 8,
+        startX: 170,
+        startY: 130,
+        blockWidth: 95,
+        blockHeight: 36,
+        gapX: 10,
+        gapY: 10,
+        hp: 12,
+        expReward: 3,
+      }),
       boss: {
         hp: 100,
         maxHp: 100,
@@ -51,6 +67,8 @@ function createInitialState(rng: SeededRng): WorldState {
       ballSpeed: 300,
       wallDecayFactor: 0.85,
       barBounceMaxAngleRad: Math.PI / 3,
+      blockAdvanceSpeed: 24,
+      blockReachDamage: 1,
     },
   };
 }
@@ -80,10 +98,16 @@ export class World {
     this.state.tickCount += 1;
     this.state.elapsedMs += stepMs;
     this.clock.advance(stepMs);
-    updateBar(this.state, inputs);
-    updateBalls(this.state, stepMs);
-    updateWallReflection(this.state);
-    updateBarReflection(this.state);
+    if (this.state.phase === 'playing') {
+      updateBar(this.state, inputs);
+      updateBalls(this.state, stepMs);
+      updateWallReflection(this.state);
+      updateBarReflection(this.state);
+      updateBlockCollision(this.state);
+      advanceBlocks(this.state, stepMs);
+      applyBlockReachedDamage(this.state);
+      updateWinLosePhase(this.state);
+    }
     this.state.rngState = this.rng.getState();
     if (this.state.phase === 'preparing') {
       this.state.phase = 'playing';

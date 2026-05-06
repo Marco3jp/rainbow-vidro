@@ -119,6 +119,22 @@ export class PixiRenderer implements Renderer {
       );
     }
 
+    // Blocks (interpolated by id)
+    const prevBlocks = new Map(prev.entities.blocks.map((block) => [block.id, block]));
+    for (const block of curr.entities.blocks) {
+      const prevBlock = prevBlocks.get(block.id);
+      const drawX = prevBlock === undefined ? block.x : prevBlock.x + (block.x - prevBlock.x) * alpha;
+      const drawY = prevBlock === undefined ? block.y : prevBlock.y + (block.y - prevBlock.y) * alpha;
+      g.rect(
+        offsetX + (drawX - block.width / 2) * scale,
+        offsetY + (drawY - block.height / 2) * scale,
+        block.width * scale,
+        block.height * scale,
+      )
+        .fill(new Color('#1f2937'))
+        .stroke({ color: new Color('#34d399'), width: 1 });
+    }
+
     const cursor = this.cursorGraphics;
     if (cursor !== null) {
       if (this.visualPointer === null) {
