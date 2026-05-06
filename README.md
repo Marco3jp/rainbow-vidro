@@ -1,5 +1,7 @@
 # rainbow-vidro
 
+[![CI](https://github.com/Marco3jp/rainbow-vidro/actions/workflows/ci.yml/badge.svg)](https://github.com/Marco3jp/rainbow-vidro/actions/workflows/ci.yml)
+
 スリングアクションを取り入れたブロック崩しゲーム。スキルを持ったキャラクターを操作し、ギミックを仕掛けてくる敵と戦う、戦略性と爽快感を両立した1プレイ約10分のWebゲームです。
 
 ## 特徴 (予定)
@@ -11,7 +13,7 @@
 
 ## 開発状況
 
-現在は設計フェーズ。設計ドキュメントは [`docs/`](docs/) を参照してください。
+Phase 1 の基盤セットアップが完了し、ローカル開発コマンドが利用可能です。設計ドキュメントは [`docs/`](docs/) を参照してください。
 
 - [`docs/requirements.md`](docs/requirements.md) — 要件と前提
 - [`docs/game-design.md`](docs/game-design.md) — ゲームデザインの仕様
@@ -20,7 +22,7 @@
 - [`docs/testing.md`](docs/testing.md) — テスト戦略
 - [`docs/operations.md`](docs/operations.md) — リポジトリ運用ルール
 
-## 技術スタック (予定)
+## 技術スタック
 
 - TypeScript + Vite
 - レンダラ: PixiJS v8 (レンダラ抽象化レイヤ経由で利用)
@@ -29,7 +31,18 @@
 - CI/CD: GitHub Actions
 - Deploy: GitHub Pages
 
-具体的なバージョンや導入は次のセッションでセットアップします。
+## ローカル開発コマンド
+
+```bash
+npm install
+npm run dev
+npm run build
+npm run lint
+npm run typecheck
+npm run test
+npm run test:watch
+npm run test:coverage
+```
 
 ## ライセンス
 

@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  checks:
+    name: Lint / Typecheck / Test / Build
+    runs-on: ubuntu-latest
+    steps:
+      # ソースコードを取得する
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Node.js LTS を使い npm キャッシュを有効化する
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      # lockfile ベースで依存をインストールする
+      - name: Install dependencies
+        run: npm ci
+
+      # 品質チェック: Lint
+      - name: Lint
+        run: npm run lint
+
+      # 品質チェック: 型検査
+      - name: Typecheck
+        run: npm run typecheck
+
+      # 品質チェック: 単体テスト
+      - name: Unit test
+        run: npm run test
+
+      # 品質チェック: ビルド
+      - name: Build
+        run: npm run build

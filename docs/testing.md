@@ -61,15 +61,16 @@
 - スナップショットテストは `tests/__snapshots__/` 配下
 - リプレイログのフィクスチャは `tests/fixtures/replays/` 配下
 
-## 7. ローカル実行コマンド (予定)
-
-> Phase 1 の F-01 ~ F-04 完了後にこのセクションを実コマンドで更新する。
+## 7. ローカル実行コマンド
 
 ```bash
 npm install        # 依存インストール
 npm run dev        # 開発サーバ
 npm run build      # 本番ビルド
 npm run lint       # Biome lint
-npm run test       # Vitest
+npm run typecheck  # TypeScript 型チェック
+npm run test       # Vitest (1回実行)
+npm run test:watch # Vitest (ウォッチ)
+npm run test:coverage # Vitest + カバレッジ
 npm run test:e2e   # Playwright E2E
 ```

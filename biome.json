@@ -1,0 +1,46 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.4.14/schema.json",
+  "files": {
+    "includes": ["**", "!**/dist", "!**/coverage", "!**/.tmp"]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "always"
+    }
+  },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["**/src/core/**/*.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedGlobals": {
+              "level": "error",
+              "options": {
+                "deniedGlobals": {
+                  "Math": "src/core では seeded RNG を経由してください",
+                  "Date": "src/core では注入された clock を経由してください",
+                  "performance": "src/core では注入された clock を経由してください"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}
