@@ -183,7 +183,7 @@ export class PixiRenderer implements Renderer {
       const displayReleaseDepth = prevReleaseToNormal
         ? prevBar.releaseDepth
         : alpha < 1
-          ? prevBar.releaseDepth
+          ? (prevBar.releaseDepth ?? bar.releaseDepth)
           : bar.releaseDepth;
       const horizontalOffset = calcHorizontalOffset(
         displayMode,
