@@ -42,7 +42,7 @@ function createInitialState(rng: SeededRng): WorldState {
       blocks: createBlockGrid({
         rows: 4,
         cols: 8,
-        startX: 170,
+        startX: 232.5,
         startY: 130,
         blockWidth: 95,
         blockHeight: 36,

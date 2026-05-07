@@ -39,6 +39,12 @@ export class GameScene implements Renderer {
   private levelText: HTMLSpanElement | null = null;
   private skillList: HTMLUListElement | null = null;
   private skillPointButton: HTMLButtonElement | null = null;
+  private phaseText: HTMLSpanElement | null = null;
+  private blockCountText: HTMLSpanElement | null = null;
+  private ballCountText: HTMLSpanElement | null = null;
+  private blockHpAvgText: HTMLSpanElement | null = null;
+  private characterStatsList: HTMLUListElement | null = null;
+  private ballStateList: HTMLUListElement | null = null;
 
   public constructor(private readonly renderer: Renderer) {}
 
@@ -50,14 +56,19 @@ export class GameScene implements Renderer {
     const hudLeft = document.createElement('aside');
     hudLeft.className = 'game-scene__hud game-scene__hud--left';
     hudLeft.innerHTML = `
-      <section class="hud-card hud-card--placeholder">
-        <h2>左HUD</h2>
-        <p>将来の表示領域</p>
+      <section class="hud-card">
+        <h2>キャラクターステータス</h2>
+        <ul class="hud-stats" data-hud="character-stats-list"></ul>
+      </section>
+      <section class="hud-card">
+        <h2>ボール状態</h2>
+        <ul class="hud-stats" data-hud="ball-state-list"></ul>
       </section>
     `;
     const hudRight = document.createElement('aside');
     hudRight.className = 'game-scene__hud game-scene__hud--right';
     hudRight.innerHTML = `
+      <div class="hud-columns">
       <section class="hud-card">
         <h2>プレイヤー</h2>
         <div class="hud-row">
@@ -91,6 +102,14 @@ export class GameScene implements Renderer {
         <ul class="hud-skills" data-hud="skill-list"></ul>
         <button type="button" data-hud="skill-point-button">スキルポイントを振る</button>
       </section>
+      <section class="hud-card">
+        <h2>戦況</h2>
+        <div class="hud-row"><span>フェーズ</span><span data-hud="phase-text"></span></div>
+        <div class="hud-row"><span>ブロック数</span><span data-hud="block-count-text"></span></div>
+        <div class="hud-row"><span>ボール数</span><span data-hud="ball-count-text"></span></div>
+        <div class="hud-row"><span>平均ブロックHP</span><span data-hud="block-hp-avg-text"></span></div>
+      </section>
+      </div>
     `;
     root.append(fieldArea, hudLeft, hudRight);
     container.replaceChildren(root);
@@ -108,6 +127,12 @@ export class GameScene implements Renderer {
     this.levelText = root.querySelector('[data-hud="level-text"]');
     this.skillList = root.querySelector('[data-hud="skill-list"]');
     this.skillPointButton = root.querySelector('[data-hud="skill-point-button"]');
+    this.phaseText = root.querySelector('[data-hud="phase-text"]');
+    this.blockCountText = root.querySelector('[data-hud="block-count-text"]');
+    this.ballCountText = root.querySelector('[data-hud="ball-count-text"]');
+    this.blockHpAvgText = root.querySelector('[data-hud="block-hp-avg-text"]');
+    this.characterStatsList = root.querySelector('[data-hud="character-stats-list"]');
+    this.ballStateList = root.querySelector('[data-hud="ball-state-list"]');
     await this.renderer.mount(fieldArea);
   }
 
@@ -200,6 +225,62 @@ export class GameScene implements Renderer {
       this.skillPointButton.disabled = character.skillPoints <= 0;
       this.skillPointButton.textContent = `スキルポイントを振る (${character.skillPoints})`;
     }
+    if (this.phaseText !== null) {
+      this.phaseText.textContent = snapshot.phase;
+    }
+    if (this.blockCountText !== null) {
+      this.blockCountText.textContent = `${snapshot.entities.blocks.length}`;
+    }
+    if (this.ballCountText !== null) {
+      this.ballCountText.textContent = `${snapshot.entities.balls.length}`;
+    }
+    if (this.blockHpAvgText !== null) {
+      const totalHp = snapshot.entities.blocks.reduce((sum, block) => sum + block.hp, 0);
+      const avg =
+        snapshot.entities.blocks.length === 0 ? 0 : totalHp / snapshot.entities.blocks.length;
+      this.blockHpAvgText.textContent = this.formatNumber(avg);
+    }
+
+    if (this.characterStatsList !== null) {
+      this.characterStatsList.replaceChildren();
+      const statsRows = [
+        `攻撃力: ${this.formatNumber(character.stats.attack)}`,
+        `ボール速度倍率: ${this.formatNumber(character.stats.ballSpeed)}`,
+        `スリング反射倍率: ${this.formatNumber(character.stats.barReflectMultiplier)}`,
+        `チャージ倍率: ${this.formatNumber(character.stats.chargeShotMultiplier)}`,
+        `CDR: ${this.formatPercent(character.stats.cdr)}`,
+        `HP自動回復: ${this.formatNumber(character.stats.hpRegenPerSec)}/s`,
+        `マナ自動回復: ${this.formatNumber(character.stats.manaRegenPerSec)}/s`,
+      ];
+      for (const text of statsRows) {
+        const item = document.createElement('li');
+        item.textContent = text;
+        this.characterStatsList.append(item);
+      }
+    }
+
+    if (this.ballStateList !== null) {
+      this.ballStateList.replaceChildren();
+      if (snapshot.entities.balls.length === 0) {
+        const item = document.createElement('li');
+        item.textContent = 'ボールなし';
+        this.ballStateList.append(item);
+      } else {
+        for (const ball of snapshot.entities.balls) {
+          const item = document.createElement('li');
+          const speed = Math.hypot(ball.vx, ball.vy);
+          const estimatedDamage = Math.round(character.stats.attack * ball.damageMultiplier);
+          item.innerHTML = [
+            `<strong>${ball.id}</strong>`,
+            `攻撃: ${estimatedDamage} (x${this.formatNumber(ball.damageMultiplier)})`,
+            `速度: ${this.formatNumber(speed)} (vx:${this.formatNumber(ball.vx)} vy:${this.formatNumber(ball.vy)})`,
+            `座標: (${this.formatNumber(ball.x)}, ${this.formatNumber(ball.y)})`,
+            `下壁貫通: ${ball.bottomReflectPassthrough ? 'ON' : 'OFF'}`,
+          ].join('<br>');
+          this.ballStateList.append(item);
+        }
+      }
+    }
   }
 
   private isPointerRenderable(renderer: Renderer): renderer is Renderer & PointerRenderable {
@@ -209,5 +290,13 @@ export class GameScene implements Renderer {
       'setVisualPointer' in renderer &&
       typeof renderer.setVisualPointer === 'function'
     );
+  }
+
+  private formatNumber(value: number): string {
+    return Number.isInteger(value) ? `${value}` : value.toFixed(2);
+  }
+
+  private formatPercent(value: number): string {
+    return `${(value * 100).toFixed(1)}%`;
   }
 }

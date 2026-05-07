@@ -64,12 +64,18 @@ export function updateBlockCollision(state: WorldState): void {
         continue;
       }
 
-      resolveBlockReflection(ball, block);
       const damage = calcDamage({
         baseAttack: state.entities.character.stats.attack,
         multipliers: [ball.damageMultiplier],
       });
-      pendingDamage.set(block.id, (pendingDamage.get(block.id) ?? 0) + damage);
+      const accumulatedDamage = pendingDamage.get(block.id) ?? 0;
+      pendingDamage.set(block.id, accumulatedDamage + damage);
+      const willBeDestroyed = block.hp - (accumulatedDamage + damage) <= 0;
+      if (willBeDestroyed) {
+        // 破壊できるブロックは貫通して進行する。
+        continue;
+      }
+      resolveBlockReflection(ball, block);
       break;
     }
   }

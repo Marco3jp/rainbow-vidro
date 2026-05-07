@@ -48,8 +48,6 @@ body {
   display: block;
   width: 100%;
   height: 100%;
-  cursor: none !important;
-  touch-action: none !important;
 }
 
 .game-scene__hud {
@@ -70,8 +68,10 @@ body {
   order: 3;
 }
 
-.hud-card--placeholder {
-  opacity: 0.75;
+.hud-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .hud-card {
@@ -115,6 +115,15 @@ body {
   padding-left: 16px;
   min-height: 18px;
   font-size: 12px;
+}
+
+.hud-stats {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 12px;
+  line-height: 1.4;
+  display: grid;
+  gap: 6px;
 }
 
 .game-scene__hud button {

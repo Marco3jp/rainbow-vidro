@@ -51,6 +51,18 @@ describe('ブロック衝突・前進・敗北判定', () => {
     expect(world.state.entities.character.exp).toBe(4);
   });
 
+  it('破壊できるブロックに当たった場合は反射せずに貫通する', () => {
+    const state = createTestState();
+    state.entities.balls = [createBall({ id: 'ball-1', x: 200, y: 120, vx: 0, vy: 60, radius: 8 })];
+    state.entities.blocks = [
+      createBlock({ id: 'block-1', x: 200, y: 130, width: 60, height: 24, hp: 10, expReward: 1 }),
+    ];
+    const world = new World({ seed: 1, initialState: state });
+    world.tick(16, []);
+    expect(world.state.entities.blocks).toHaveLength(0);
+    expect(world.state.entities.balls[0]?.vy).toBeGreaterThan(0);
+  });
+
   it('同tickの複数ボール命中でも合算ダメージで順序依存しない', () => {
     const state = createTestState();
     state.entities.balls = [

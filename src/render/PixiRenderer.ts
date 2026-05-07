@@ -20,8 +20,9 @@ export class PixiRenderer implements Renderer {
       backgroundColor: new Color('#101016'),
       resizeTo: container,
     });
-    app.canvas.style.setProperty('cursor', 'none', 'important');
-    app.canvas.style.setProperty('touch-action', 'none', 'important');
+    // Pixi EventSystem defaults to cursor: inherit; pin default to none instead.
+    app.renderer.events.cursorStyles.default = 'none';
+    app.canvas.style.cursor = 'none';
     container.appendChild(app.canvas);
     this.app = app;
   }
@@ -135,6 +136,14 @@ export class PixiRenderer implements Renderer {
       )
         .fill(new Color('#1f2937'))
         .stroke({ color: new Color('#34d399'), width: 1 });
+
+      const hpRate = block.maxHp <= 0 ? 0 : Math.max(0, Math.min(1, block.hp / block.maxHp));
+      const hpBarWidth = block.width * 0.72 * scale;
+      const hpBarHeight = Math.max(3, block.height * 0.08 * scale);
+      const hpBarX = offsetX + (drawX * scale - hpBarWidth / 2);
+      const hpBarY = offsetY + drawY * scale - hpBarHeight / 2;
+      g.rect(hpBarX, hpBarY, hpBarWidth, hpBarHeight).fill(new Color('#111827'));
+      g.rect(hpBarX, hpBarY, hpBarWidth * hpRate, hpBarHeight).fill(new Color('#22c55e'));
     }
 
     const cursor = this.cursorGraphics;
