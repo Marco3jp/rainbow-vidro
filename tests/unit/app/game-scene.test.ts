@@ -4,6 +4,17 @@ import { charA, createCharacter, type WorldSnapshot } from '@/core';
 import type { Renderer } from '@/render';
 import { GameScene } from '@/ui';
 
+function installDomGlobals(dom: JSDOM): void {
+  Object.defineProperty(globalThis, 'window', {
+    value: dom.window,
+    configurable: true,
+  });
+  Object.defineProperty(globalThis, 'document', {
+    value: dom.window.document,
+    configurable: true,
+  });
+}
+
 class MockRenderer implements Renderer {
   public async mount(container: HTMLElement): Promise<void> {
     const canvas = container.ownerDocument.createElement('canvas');
@@ -43,10 +54,7 @@ function createSnapshot(): WorldSnapshot {
 describe('GameScene HUD', () => {
   it('HP/MP と経過時間表示が snapshot 変更で更新される', async () => {
     const dom = new JSDOM('<!doctype html><html><body><div id="app"></div></body></html>');
-    // @ts-expect-error test setup for DOM globals
-    globalThis.document = dom.window.document;
-    // @ts-expect-error test setup for DOM globals
-    globalThis.window = dom.window;
+    installDomGlobals(dom);
     const container = dom.window.document.querySelector<HTMLElement>('#app');
     if (container === null) {
       throw new Error('container missing');
@@ -72,10 +80,7 @@ describe('GameScene HUD', () => {
 
   it('skillPoints があると振り分けボタンを表示する', async () => {
     const dom = new JSDOM('<!doctype html><html><body><div id="app"></div></body></html>');
-    // @ts-expect-error test setup for DOM globals
-    globalThis.document = dom.window.document;
-    // @ts-expect-error test setup for DOM globals
-    globalThis.window = dom.window;
+    installDomGlobals(dom);
     const container = dom.window.document.querySelector<HTMLElement>('#app');
     if (container === null) {
       throw new Error('container missing');
