@@ -33,8 +33,11 @@ export function updateSlingPickup(state: WorldState): void {
     if (!touching) {
       continue;
     }
+    if (ball.lastChargeHitProgress !== undefined) {
+      continue;
+    }
     const dirX = -(bar.releaseDirX ?? 0);
-    const dirY = -(bar.releaseDirY ?? -1);
+    const dirY = -(bar.releaseDirY ?? 1);
     const speed = state.config.slingShotBaseSpeed * state.entities.character.stats.ballSpeed;
     ball.vx = dirX * speed;
     ball.vy = dirY * speed;

@@ -14,12 +14,12 @@ function clamp01(value: number): number {
   return value;
 }
 
-function normalizeDirection(dx: number, dy: number): { x: number; y: number } {
-  const length = Math.hypot(dx, dy);
+function normalizeDirectionFromHorizontal(dx: number): { x: number; y: number } {
+  const length = Math.hypot(dx, 1);
   if (length <= 1e-6) {
-    return { x: 0, y: -1 };
+    return { x: 0, y: 1 };
   }
-  return { x: dx / length, y: dy / length };
+  return { x: dx / length, y: 1 / length };
 }
 
 function launchBall(state: WorldState, ballId: string, hitProgress: number): void {
@@ -29,7 +29,7 @@ function launchBall(state: WorldState, ballId: string, hitProgress: number): voi
     return;
   }
   const dirX = -(bar.releaseDirX ?? 0);
-  const dirY = -(bar.releaseDirY ?? -1);
+  const dirY = -(bar.releaseDirY ?? 1);
   const baseSpeed = state.config.slingShotBaseSpeed * state.entities.character.stats.ballSpeed;
   ball.vx = dirX * baseSpeed;
   ball.vy = dirY * baseSpeed;
@@ -68,7 +68,7 @@ export function updateSlingControl(
 
   if (bar.mode === 'charging') {
     if (latestMove !== undefined) {
-      const direction = normalizeDirection(latestMove.x - bar.zeroPosition.x, latestMove.y - bar.zeroPosition.y);
+      const direction = normalizeDirectionFromHorizontal(latestMove.x - bar.zeroPosition.x);
       bar.arc.dirX = direction.x;
       bar.arc.dirY = direction.y;
     }
@@ -83,6 +83,9 @@ export function updateSlingControl(
       bar.releaseDepth = bar.arc.depth;
       bar.releaseDirX = bar.arc.dirX;
       bar.releaseDirY = bar.arc.dirY;
+      for (const ball of state.entities.balls) {
+        delete ball.lastChargeHitProgress;
+      }
       for (const ballId of bar.attachedBallIds) {
         launchBall(state, ballId, 0);
       }

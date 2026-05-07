@@ -22,7 +22,7 @@ export function createBar(opts: CreateBarOptions): BarState {
     },
     arc: {
       dirX: 0,
-      dirY: -1,
+      dirY: 1,
       depth: 0,
     },
     mode: opts.mode ?? 'normal',
