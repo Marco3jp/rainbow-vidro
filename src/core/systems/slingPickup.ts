@@ -1,7 +1,10 @@
 import type { WorldState } from '@/core/world';
 
 import { calcChargeShotMultiplier } from './chargeShot';
-import { getReleaseProgress, isBallTouchingArc } from './slingMath';
+import { getArcCenterFromParams, getReleaseProgress, isPointTouchingArc } from './slingMath';
+
+const COLLISION_TARGET_STEP_PX = 5;
+const COLLISION_MAX_SUBSTEPS = 6;
 
 function removeAttachedId(list: string[], id: string): string[] {
   return list.filter((value) => value !== id);
@@ -23,10 +26,64 @@ export function updateSlingPickup(state: WorldState): void {
 
   const releaseProgress = bar.mode === 'releasing' ? getReleaseProgress(state) : 0;
   const releaseDepth = bar.releaseDepth ?? bar.arc.depth;
+  const stepMs = 1000 / 60;
+  const dtSeconds = stepMs / 1000;
+  const releaseProgressStart =
+    bar.mode === 'releasing'
+      ? Math.max(0, (releaseProgress * state.config.slingReleaseMs - stepMs) / state.config.slingReleaseMs)
+      : releaseProgress;
+  const depthStart =
+    bar.mode === 'releasing' ? releaseDepth * (1 - releaseProgressStart) : bar.arc.depth;
+  const arcStartCenter = getArcCenterFromParams(state, {
+    mode: bar.mode,
+    depth: depthStart,
+    dirX: bar.arc.dirX,
+    dirY: bar.arc.dirY,
+    releaseDepth: bar.releaseDepth,
+  });
+  const arcEndCenter = getArcCenterFromParams(state, {
+    mode: bar.mode,
+    depth: bar.arc.depth,
+    dirX: bar.arc.dirX,
+    dirY: bar.arc.dirY,
+    releaseDepth: bar.releaseDepth,
+  });
   for (const ball of state.entities.balls) {
-    const touching = isBallTouchingArc(state, ball);
+    const startX = ball.x - ball.vx * dtSeconds;
+    const startY = ball.y - ball.vy * dtSeconds;
+    const ballMovePx = Math.hypot(ball.x - startX, ball.y - startY);
+    const arcMovePx = Math.hypot(arcEndCenter.x - arcStartCenter.x, arcEndCenter.y - arcStartCenter.y);
+    const subSteps = Math.max(
+      1,
+      Math.min(COLLISION_MAX_SUBSTEPS, Math.ceil(Math.max(ballMovePx, arcMovePx) / COLLISION_TARGET_STEP_PX)),
+    );
+    let touched = false;
+    let touchedProgress = releaseProgress;
+    for (let i = 1; i <= subSteps; i += 1) {
+      const t = i / subSteps;
+      const sampleX = startX + (ball.x - startX) * t;
+      const sampleY = startY + (ball.y - startY) * t;
+      const sampleDepth = depthStart + (bar.arc.depth - depthStart) * t;
+      const sampleProgress = releaseProgressStart + (releaseProgress - releaseProgressStart) * t;
+      if (
+        isPointTouchingArc(state, {
+          x: sampleX,
+          y: sampleY,
+          radius: ball.radius,
+          mode: bar.mode,
+          depth: sampleDepth,
+          dirX: bar.arc.dirX,
+          dirY: bar.arc.dirY,
+          releaseDepth: bar.releaseDepth,
+        })
+      ) {
+        touched = true;
+        touchedProgress = sampleProgress;
+        break;
+      }
+    }
     if (bar.mode === 'charging') {
-      if (touching) {
+      if (touched) {
         ball.vx = 0;
         ball.vy = 0;
         if (!bar.attachedBallIds.includes(ball.id)) {
@@ -38,7 +95,7 @@ export function updateSlingPickup(state: WorldState): void {
       continue;
     }
 
-    if (!touching) {
+    if (!touched) {
       continue;
     }
     if (ball.lastChargeHitProgress !== undefined) {
@@ -50,10 +107,10 @@ export function updateSlingPickup(state: WorldState): void {
     const speed = state.config.slingShotBaseSpeed * state.entities.character.stats.ballSpeed;
     ball.vx = dirX * speed;
     ball.vy = dirY * speed;
-    ball.lastChargeHitProgress = releaseProgress;
+    ball.lastChargeHitProgress = touchedProgress;
     ball.damageMultiplier *= calcChargeShotMultiplier(
       releaseDepth,
-      releaseProgress,
+      touchedProgress,
       state.entities.character,
       state.config,
     );

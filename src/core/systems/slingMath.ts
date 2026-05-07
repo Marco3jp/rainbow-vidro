@@ -38,6 +38,25 @@ function calcHorizontalOffset(state: WorldState, bar: BarState): number {
   return horizontalMax * t;
 }
 
+function calcHorizontalOffsetFromParams(
+  maxDepthPx: number,
+  mode: BarState['mode'],
+  dirX: number,
+  depth: number,
+  releaseDepth: number | undefined,
+): number {
+  const horizontalMax = dirX * maxDepthPx * SLING_HORIZONTAL_RANGE_MULTIPLIER;
+  if (mode !== 'releasing') {
+    return horizontalMax;
+  }
+  const effectiveReleaseDepth = releaseDepth ?? 0;
+  if (effectiveReleaseDepth <= 1e-6) {
+    return 0;
+  }
+  const t = clamp01(depth / effectiveReleaseDepth);
+  return horizontalMax * t;
+}
+
 export function getArcCenter(state: WorldState, bar: BarState): { x: number; y: number } {
   const verticalOffset = bar.arc.depth * state.config.slingArcMaxDepthPx * SLING_ARC_DEPTH_MULTIPLIER;
   const horizontalOffset = calcHorizontalOffset(state, bar);
@@ -47,9 +66,60 @@ export function getArcCenter(state: WorldState, bar: BarState): { x: number; y: 
   };
 }
 
-export function isBallTouchingArc(state: WorldState, ball: BallState): boolean {
+export function getArcCenterFromParams(
+  state: WorldState,
+  params: {
+    mode: BarState['mode'];
+    depth: number;
+    dirX: number;
+    dirY: number;
+    releaseDepth: number | undefined;
+  },
+): { x: number; y: number } {
+  const verticalOffset =
+    params.depth * state.config.slingArcMaxDepthPx * SLING_ARC_DEPTH_MULTIPLIER;
+  const horizontalOffset = calcHorizontalOffsetFromParams(
+    state.config.slingArcMaxDepthPx,
+    params.mode,
+    params.dirX,
+    params.depth,
+    params.releaseDepth,
+  );
   const bar = state.entities.bar;
-  const center = getArcCenter(state, bar);
+  return {
+    x: bar.zeroPosition.x + horizontalOffset,
+    y: bar.zeroPosition.y + params.dirY * verticalOffset,
+  };
+}
+
+export function isBallTouchingArc(state: WorldState, ball: BallState): boolean {
+  return isPointTouchingArc(state, {
+    x: ball.x,
+    y: ball.y,
+    radius: ball.radius,
+    mode: state.entities.bar.mode,
+    depth: state.entities.bar.arc.depth,
+    dirX: state.entities.bar.arc.dirX,
+    dirY: state.entities.bar.arc.dirY,
+    releaseDepth: state.entities.bar.releaseDepth,
+  });
+}
+
+export function isPointTouchingArc(
+  state: WorldState,
+  params: {
+    x: number;
+    y: number;
+    radius: number;
+    mode: BarState['mode'];
+    depth: number;
+    dirX: number;
+    dirY: number;
+    releaseDepth: number | undefined;
+  },
+): boolean {
+  const bar = state.entities.bar;
+  const center = getArcCenterFromParams(state, params);
   const start = { x: bar.zeroPosition.x - bar.zeroPosition.width / 2, y: bar.zeroPosition.y };
   const end = { x: bar.zeroPosition.x + bar.zeroPosition.width / 2, y: bar.zeroPosition.y };
   const control = { x: center.x, y: center.y };
@@ -66,10 +136,10 @@ export function isBallTouchingArc(state: WorldState, ball: BallState): boolean {
       x: mt * mt * start.x + 2 * mt * t * control.x + t * t * end.x,
       y: mt * mt * start.y + 2 * mt * t * control.y + t * t * end.y,
     };
-    const nearest = nearestPointOnSegment(ball.x, ball.y, prevPoint.x, prevPoint.y, point.x, point.y);
-    const dx = ball.x - nearest.x;
-    const dy = ball.y - nearest.y;
-    const allowed = ball.radius + arcThickness;
+    const nearest = nearestPointOnSegment(params.x, params.y, prevPoint.x, prevPoint.y, point.x, point.y);
+    const dx = params.x - nearest.x;
+    const dy = params.y - nearest.y;
+    const allowed = params.radius + arcThickness;
     if (dx * dx + dy * dy <= allowed * allowed) {
       return true;
     }
