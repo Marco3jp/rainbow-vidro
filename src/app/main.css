@@ -131,6 +131,13 @@ body {
   gap: 8px;
 }
 
+.hud-debug-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
 .hud-debug__row {
   display: grid;
   gap: 4px;

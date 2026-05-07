@@ -16,6 +16,7 @@ function installDomGlobals(dom: JSDOM): void {
 }
 
 class MockRenderer implements Renderer {
+  public setCollisionDebugVisible(_visible: boolean): void {}
   public async mount(container: HTMLElement): Promise<void> {
     const canvas = container.ownerDocument.createElement('canvas');
     container.append(canvas);
@@ -60,6 +61,7 @@ function createSnapshot(): WorldSnapshot {
       slingReleaseMs: 80,
       slingPostFadeMs: 140,
       slingArcMaxDepthPx: 72,
+      slingArcSegments: 12,
       slingShotBaseSpeed: 420,
       chargeFactorMin: 1,
       chargeFactorMax: 2.5,
@@ -242,5 +244,26 @@ describe('GameScene HUD', () => {
     releaseMsInput.dispatchEvent(new dom.window.Event('change'));
 
     expect(onDebugValueChange).toHaveBeenCalledWith('slingPostFadeMs', 96);
+  });
+
+  it('当たり判定トグルでレンダラへ表示フラグを渡せる', async () => {
+    const dom = new JSDOM('<!doctype html><html><body><div id="app"></div></body></html>');
+    installDomGlobals(dom);
+    const container = dom.window.document.querySelector<HTMLElement>('#app');
+    if (container === null) {
+      throw new Error('container missing');
+    }
+
+    const renderer = new MockRenderer();
+    const spy = vi.spyOn(renderer, 'setCollisionDebugVisible');
+    const scene = new GameScene(renderer);
+    await scene.mount(container);
+    const toggle = container.querySelector<HTMLInputElement>('[data-hud="collision-debug-toggle"]');
+    if (toggle === null) {
+      throw new Error('toggle missing');
+    }
+    toggle.checked = true;
+    toggle.dispatchEvent(new dom.window.Event('change'));
+    expect(spy).toHaveBeenCalledWith(true);
   });
 });

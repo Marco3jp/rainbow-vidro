@@ -39,6 +39,7 @@ function createTestState(): WorldState {
       slingReleaseMs: 80,
       slingPostFadeMs: 140,
       slingArcMaxDepthPx: 72,
+      slingArcSegments: 12,
       slingShotBaseSpeed: 420,
       chargeFactorMin: 1,
       chargeFactorMax: 2.5,
@@ -166,7 +167,7 @@ describe('スリングシステム', () => {
     state.entities.bar.releaseDirX = 0;
     state.entities.bar.releaseDirY = 1;
     state.entities.bar.arc.depth = 0.5;
-    state.entities.balls = [createBall({ id: 'ball-1', x: 200, y: 216, vx: -10, vy: 20, radius: 8 })];
+    state.entities.balls = [createBall({ id: 'ball-1', x: 200, y: 220, vx: -10, vy: 20, radius: 8 })];
     const world = new World({ seed: 1, initialState: state });
     world.tick(1000 / 60, []);
     const ball = world.state.entities.balls[0];
@@ -184,7 +185,7 @@ describe('スリングシステム', () => {
     state.entities.bar.releaseDirX = 0;
     state.entities.bar.releaseDirY = 1;
     state.entities.bar.arc.depth = 0.5;
-    state.entities.balls = [createBall({ id: 'ball-1', x: 200, y: 216, vx: 0, vy: 0, radius: 8 })];
+    state.entities.balls = [createBall({ id: 'ball-1', x: 200, y: 220, vx: 0, vy: 0, radius: 8 })];
     const world = new World({ seed: 1, initialState: state });
 
     world.tick(1000 / 60, []);

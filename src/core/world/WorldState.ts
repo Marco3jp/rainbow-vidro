@@ -61,6 +61,7 @@ export interface WorldConfig {
   slingReleaseMs: number;
   slingPostFadeMs: number;
   slingArcMaxDepthPx: number;
+  slingArcSegments: number;
   slingShotBaseSpeed: number;
   chargeFactorMin: number;
   chargeFactorMax: number;

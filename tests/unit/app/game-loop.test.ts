@@ -63,6 +63,7 @@ describe('GameLoop', () => {
       slingReleaseMs: 80,
       slingPostFadeMs: 140,
       slingArcMaxDepthPx: 72,
+      slingArcSegments: 12,
       slingShotBaseSpeed: 420,
       chargeFactorMin: 1,
       chargeFactorMax: 2.5,

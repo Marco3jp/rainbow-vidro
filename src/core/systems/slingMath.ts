@@ -1,6 +1,9 @@
 import type { BallState, BarState, WorldState } from '@/core/world';
 
 const SLING_HORIZONTAL_RANGE_MULTIPLIER = 2;
+const SLING_ARC_DEPTH_MULTIPLIER = 3;
+const ARC_COLLISION_THICKNESS_FACTOR = 0.18;
+const ARC_COLLISION_MIN_THICKNESS = 0.75;
 
 function clamp01(value: number): number {
   if (value < 0) {
@@ -36,7 +39,7 @@ function calcHorizontalOffset(state: WorldState, bar: BarState): number {
 }
 
 export function getArcCenter(state: WorldState, bar: BarState): { x: number; y: number } {
-  const verticalOffset = bar.arc.depth * state.config.slingArcMaxDepthPx;
+  const verticalOffset = bar.arc.depth * state.config.slingArcMaxDepthPx * SLING_ARC_DEPTH_MULTIPLIER;
   const horizontalOffset = calcHorizontalOffset(state, bar);
   return {
     x: bar.zeroPosition.x + horizontalOffset,
@@ -46,16 +49,52 @@ export function getArcCenter(state: WorldState, bar: BarState): { x: number; y: 
 
 export function isBallTouchingArc(state: WorldState, ball: BallState): boolean {
   const bar = state.entities.bar;
-  const arcCenter = getArcCenter(state, bar);
-  const halfWidth = bar.zeroPosition.width / 2;
-  const halfHeight = bar.zeroPosition.height / 2;
-  const left = arcCenter.x - halfWidth;
-  const right = arcCenter.x + halfWidth;
-  const top = arcCenter.y - halfHeight;
-  const bottom = arcCenter.y + halfHeight;
-  const nearestX = Math.max(left, Math.min(right, ball.x));
-  const nearestY = Math.max(top, Math.min(bottom, ball.y));
-  const dx = ball.x - nearestX;
-  const dy = ball.y - nearestY;
-  return dx * dx + dy * dy <= ball.radius * ball.radius;
+  const center = getArcCenter(state, bar);
+  const start = { x: bar.zeroPosition.x - bar.zeroPosition.width / 2, y: bar.zeroPosition.y };
+  const end = { x: bar.zeroPosition.x + bar.zeroPosition.width / 2, y: bar.zeroPosition.y };
+  const control = { x: center.x, y: center.y };
+  const segmentCount = Math.max(3, Math.floor(state.config.slingArcSegments));
+  const arcThickness = Math.max(
+    ARC_COLLISION_MIN_THICKNESS,
+    bar.zeroPosition.height * ARC_COLLISION_THICKNESS_FACTOR,
+  );
+  let prevPoint = start;
+  for (let i = 1; i <= segmentCount; i += 1) {
+    const t = i / segmentCount;
+    const mt = 1 - t;
+    const point = {
+      x: mt * mt * start.x + 2 * mt * t * control.x + t * t * end.x,
+      y: mt * mt * start.y + 2 * mt * t * control.y + t * t * end.y,
+    };
+    const nearest = nearestPointOnSegment(ball.x, ball.y, prevPoint.x, prevPoint.y, point.x, point.y);
+    const dx = ball.x - nearest.x;
+    const dy = ball.y - nearest.y;
+    const allowed = ball.radius + arcThickness;
+    if (dx * dx + dy * dy <= allowed * allowed) {
+      return true;
+    }
+    prevPoint = point;
+  }
+  return false;
+}
+
+function nearestPointOnSegment(
+  px: number,
+  py: number,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+): { x: number; y: number } {
+  const vx = x2 - x1;
+  const vy = y2 - y1;
+  const lengthSq = vx * vx + vy * vy;
+  if (lengthSq <= 1e-8) {
+    return { x: x1, y: y1 };
+  }
+  const t = clamp01(((px - x1) * vx + (py - y1) * vy) / lengthSq);
+  return {
+    x: x1 + vx * t,
+    y: y1 + vy * t,
+  };
 }

@@ -37,9 +37,9 @@ function createInitialState(rng: SeededRng): WorldState {
       ],
       bar: createBar({
         x: DEFAULT_FIELD.width / 2,
-        y: DEFAULT_FIELD.height - 140,
+        y: DEFAULT_FIELD.height - 168,
         width: 120,
-        height: 16,
+        height: 8,
       }),
       blocks: createBlockGrid({
         rows: 4,
@@ -75,6 +75,7 @@ function createInitialState(rng: SeededRng): WorldState {
       slingReleaseMs: 80,
       slingPostFadeMs: 140,
       slingArcMaxDepthPx: 72,
+      slingArcSegments: 12,
       slingShotBaseSpeed: 420,
       chargeFactorMin: 1,
       chargeFactorMax: 2.5,

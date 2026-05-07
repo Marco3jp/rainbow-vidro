@@ -6,11 +6,16 @@ interface PointerRenderable {
   setVisualPointer(point: { x: number; y: number } | null): void;
 }
 
+interface CollisionDebugRenderable {
+  setCollisionDebugVisible(visible: boolean): void;
+}
+
 type DebugTunableKey =
   | 'slingChargeMaxMs'
   | 'slingReleaseMs'
   | 'slingPostFadeMs'
   | 'slingArcMaxDepthPx'
+  | 'slingArcSegments'
   | 'slingShotBaseSpeed'
   | 'ballSpeed'
   | 'characterBallSpeed';
@@ -32,6 +37,7 @@ const DEBUG_CONTROL_SPECS: DebugControlSpec[] = [
   { key: 'slingReleaseMs', label: 'リリース時間(ms)', min: 30, max: 200, step: 5 },
   { key: 'slingPostFadeMs', label: '残像フェード時間(ms)', min: 80, max: 300, step: 10 },
   { key: 'slingArcMaxDepthPx', label: '弧深さ(px)', min: 20, max: 200, step: 2 },
+  { key: 'slingArcSegments', label: '弧分割数(N)', min: 4, max: 32, step: 1 },
   { key: 'slingShotBaseSpeed', label: 'スリング射出速度', min: 100, max: 1200, step: 10 },
   { key: 'ballSpeed', label: 'ボール基礎速度', min: 100, max: 1200, step: 10 },
   { key: 'characterBallSpeed', label: 'ボール速度倍率', min: 0.5, max: 4, step: 0.05 },
@@ -76,6 +82,7 @@ export class GameScene implements Renderer {
   private blockHpAvgText: HTMLSpanElement | null = null;
   private characterStatsList: HTMLUListElement | null = null;
   private ballStateList: HTMLUListElement | null = null;
+  private collisionDebugToggle: HTMLInputElement | null = null;
   private debugInputByKey = new Map<
     DebugTunableKey,
     { range: HTMLInputElement; number: HTMLInputElement }
@@ -149,6 +156,10 @@ export class GameScene implements Renderer {
       </section>
       <section class="hud-card">
         <h2>デバッグ調整</h2>
+        <label class="hud-debug-toggle">
+          <input type="checkbox" data-hud="collision-debug-toggle" />
+          当たり判定矩形を表示
+        </label>
         <div class="hud-debug" data-hud="debug-controls"></div>
       </section>
       </div>
@@ -175,6 +186,14 @@ export class GameScene implements Renderer {
     this.blockHpAvgText = root.querySelector('[data-hud="block-hp-avg-text"]');
     this.characterStatsList = root.querySelector('[data-hud="character-stats-list"]');
     this.ballStateList = root.querySelector('[data-hud="ball-state-list"]');
+    this.collisionDebugToggle = root.querySelector<HTMLInputElement>(
+      '[data-hud="collision-debug-toggle"]',
+    );
+    this.collisionDebugToggle?.addEventListener('change', () => {
+      if (this.isCollisionDebugRenderable(this.renderer)) {
+        this.renderer.setCollisionDebugVisible(this.collisionDebugToggle?.checked === true);
+      }
+    });
     const debugControls = root.querySelector<HTMLElement>('[data-hud="debug-controls"]');
     if (debugControls !== null) {
       this.mountDebugControls(debugControls);
@@ -339,6 +358,12 @@ export class GameScene implements Renderer {
     );
   }
 
+  private isCollisionDebugRenderable(
+    renderer: Renderer,
+  ): renderer is Renderer & CollisionDebugRenderable {
+    return 'setCollisionDebugVisible' in renderer;
+  }
+
   private formatNumber(value: number): string {
     return Number.isInteger(value) ? `${value}` : value.toFixed(2);
   }
@@ -396,6 +421,7 @@ export class GameScene implements Renderer {
       slingReleaseMs: snapshot.config.slingReleaseMs,
       slingPostFadeMs: snapshot.config.slingPostFadeMs,
       slingArcMaxDepthPx: snapshot.config.slingArcMaxDepthPx,
+      slingArcSegments: snapshot.config.slingArcSegments,
       slingShotBaseSpeed: snapshot.config.slingShotBaseSpeed,
       ballSpeed: snapshot.config.ballSpeed,
       characterBallSpeed: snapshot.entities.character.stats.ballSpeed,
