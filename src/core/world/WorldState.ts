@@ -9,6 +9,8 @@ export interface BallState {
   radius: number;
   damageMultiplier: number;
   bottomReflectPassthrough: boolean;
+  /** 直前のチャージショットヒット時の正規化進捗 (0=リリース位置, 1=ゼロ位置)。 */
+  lastChargeHitProgress?: number;
 }
 
 export interface BarState {
@@ -16,7 +18,19 @@ export interface BarState {
   y: number;
   width: number;
   height: number;
-  mode: 'normal' | 'charging';
+  zeroPosition: { x: number; y: number; width: number; height: number };
+  arc: {
+    dirX: number;
+    dirY: number;
+    depth: number;
+  };
+  mode: 'normal' | 'charging' | 'releasing';
+  chargeStartTick?: number;
+  releaseStartTick?: number;
+  releaseDepth?: number;
+  releaseDirX?: number;
+  releaseDirY?: number;
+  attachedBallIds: string[];
 }
 
 export interface BlockState {
@@ -43,6 +57,16 @@ export interface WorldConfig {
   barBounceMaxAngleRad: number;
   blockAdvanceSpeed: number;
   blockReachDamage: number;
+  slingChargeMaxMs: number;
+  slingReleaseMs: number;
+  slingPostFadeMs: number;
+  slingArcMaxDepthPx: number;
+  slingArcSegments: number;
+  slingShotBaseSpeed: number;
+  chargeFactorMin: number;
+  chargeFactorMax: number;
+  hitFactorMin: number;
+  hitFactorMax: number;
 }
 
 export interface WorldState {

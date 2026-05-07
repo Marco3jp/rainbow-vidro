@@ -8,7 +8,16 @@ function createTestState(): WorldState {
     phase: 'playing',
     entities: {
       balls: [],
-      bar: { x: 200, y: 180, width: 100, height: 20, mode: 'normal' },
+      bar: {
+        x: 200,
+        y: 180,
+        width: 100,
+        height: 20,
+        zeroPosition: { x: 200, y: 180, width: 100, height: 20 },
+        arc: { dirX: 0, dirY: -1, depth: 0 },
+        mode: 'normal',
+        attachedBallIds: [],
+      },
       blocks: [],
       boss: { hp: 10, maxHp: 10 },
       character: createCharacter(charA),
@@ -23,6 +32,16 @@ function createTestState(): WorldState {
       barBounceMaxAngleRad: 1,
       blockAdvanceSpeed: 24,
       blockReachDamage: 1,
+      slingChargeMaxMs: 200,
+      slingReleaseMs: 80,
+      slingPostFadeMs: 140,
+      slingArcMaxDepthPx: 72,
+      slingArcSegments: 12,
+      slingShotBaseSpeed: 420,
+      chargeFactorMin: 1,
+      chargeFactorMax: 2.5,
+      hitFactorMin: 1,
+      hitFactorMax: 2,
     },
   };
 }
@@ -45,13 +64,14 @@ describe('バー反射', () => {
     expect(Math.abs(world.state.entities.balls[0]?.vx ?? 0)).toBeGreaterThan(0);
   });
 
-  it('charging モードでは反射しない', () => {
+  it('charging モードでは通常反射せず、弧接触で停止する', () => {
     const state = createTestState();
     state.entities.bar.mode = 'charging';
     state.entities.balls = [createBall({ id: 'b1', x: 200, y: 170, vx: 0, vy: 100, radius: 5 })];
     const world = new World({ seed: 1, initialState: state });
     world.tick(16, []);
-    expect(world.state.entities.balls[0]?.vy).toBeGreaterThan(0);
+    expect(world.state.entities.balls[0]?.vy).toBe(0);
+    expect(world.state.entities.bar.attachedBallIds).toContain('b1');
   });
 
   it('通常反射で damageMultiplier は維持される', () => {

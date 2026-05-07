@@ -1,5 +1,5 @@
 import { JSDOM } from 'jsdom';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { charA, createCharacter, type WorldSnapshot } from '@/core';
 import type { Renderer } from '@/render';
 import { GameScene } from '@/ui';
@@ -16,6 +16,7 @@ function installDomGlobals(dom: JSDOM): void {
 }
 
 class MockRenderer implements Renderer {
+  public setCollisionDebugVisible(_visible: boolean): void {}
   public async mount(container: HTMLElement): Promise<void> {
     const canvas = container.ownerDocument.createElement('canvas');
     container.append(canvas);
@@ -32,7 +33,16 @@ function createSnapshot(): WorldSnapshot {
     phase: 'playing',
     entities: {
       balls: [],
-      bar: { x: 200, y: 180, width: 100, height: 20, mode: 'normal' },
+      bar: {
+        x: 200,
+        y: 180,
+        width: 100,
+        height: 20,
+        zeroPosition: { x: 200, y: 180, width: 100, height: 20 },
+        arc: { dirX: 0, dirY: -1, depth: 0 },
+        mode: 'normal',
+        attachedBallIds: [],
+      },
       blocks: [],
       boss: { hp: 90, maxHp: 120 },
       character: createCharacter(charA),
@@ -47,6 +57,16 @@ function createSnapshot(): WorldSnapshot {
       barBounceMaxAngleRad: 1,
       blockAdvanceSpeed: 24,
       blockReachDamage: 1,
+      slingChargeMaxMs: 200,
+      slingReleaseMs: 80,
+      slingPostFadeMs: 140,
+      slingArcMaxDepthPx: 72,
+      slingArcSegments: 12,
+      slingShotBaseSpeed: 420,
+      chargeFactorMin: 1,
+      chargeFactorMax: 2.5,
+      hitFactorMin: 1,
+      hitFactorMax: 2,
     },
   };
 }
@@ -198,5 +218,52 @@ describe('GameScene HUD', () => {
     expect(container.querySelector('[data-hud="block-count-text"]')?.textContent).toBe('2');
     expect(container.querySelector('[data-hud="ball-count-text"]')?.textContent).toBe('1');
     expect(container.querySelector('[data-hud="block-hp-avg-text"]')?.textContent).toBe('10');
+  });
+
+  it('デバッグ調整UIから設定変更コールバックを発火できる', async () => {
+    const dom = new JSDOM('<!doctype html><html><body><div id="app"></div></body></html>');
+    installDomGlobals(dom);
+    const container = dom.window.document.querySelector<HTMLElement>('#app');
+    if (container === null) {
+      throw new Error('container missing');
+    }
+
+    const onDebugValueChange = vi.fn();
+    const scene = new GameScene(new MockRenderer(), { onDebugValueChange });
+    await scene.mount(container);
+    const snapshot = createSnapshot();
+    scene.render(snapshot, snapshot, 1);
+
+    const releaseMsInput = container.querySelector<HTMLInputElement>(
+      'input[type="number"][data-debug-key="slingPostFadeMs"]',
+    );
+    if (releaseMsInput === null) {
+      throw new Error('debug input missing');
+    }
+    releaseMsInput.value = '96';
+    releaseMsInput.dispatchEvent(new dom.window.Event('change'));
+
+    expect(onDebugValueChange).toHaveBeenCalledWith('slingPostFadeMs', 96);
+  });
+
+  it('当たり判定トグルでレンダラへ表示フラグを渡せる', async () => {
+    const dom = new JSDOM('<!doctype html><html><body><div id="app"></div></body></html>');
+    installDomGlobals(dom);
+    const container = dom.window.document.querySelector<HTMLElement>('#app');
+    if (container === null) {
+      throw new Error('container missing');
+    }
+
+    const renderer = new MockRenderer();
+    const spy = vi.spyOn(renderer, 'setCollisionDebugVisible');
+    const scene = new GameScene(renderer);
+    await scene.mount(container);
+    const toggle = container.querySelector<HTMLInputElement>('[data-hud="collision-debug-toggle"]');
+    if (toggle === null) {
+      throw new Error('toggle missing');
+    }
+    toggle.checked = true;
+    toggle.dispatchEvent(new dom.window.Event('change'));
+    expect(spy).toHaveBeenCalledWith(true);
   });
 });

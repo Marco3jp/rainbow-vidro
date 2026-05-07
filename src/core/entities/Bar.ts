@@ -14,6 +14,18 @@ export function createBar(opts: CreateBarOptions): BarState {
     y: opts.y,
     width: opts.width,
     height: opts.height,
+    zeroPosition: {
+      x: opts.x,
+      y: opts.y,
+      width: opts.width,
+      height: opts.height,
+    },
+    arc: {
+      dirX: 0,
+      dirY: 1,
+      depth: 0,
+    },
     mode: opts.mode ?? 'normal',
+    attachedBallIds: [],
   };
 }

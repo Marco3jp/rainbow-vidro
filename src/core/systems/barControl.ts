@@ -12,6 +12,9 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 export function updateBar(state: WorldState, inputs: ReadonlyArray<InputEvent>): void {
+  if (state.entities.bar.mode !== 'normal') {
+    return;
+  }
   const mouseMove = [...inputs].reverse().find((input) => input.type === 'mousemove');
   if (mouseMove === undefined) {
     return;
@@ -19,4 +22,6 @@ export function updateBar(state: WorldState, inputs: ReadonlyArray<InputEvent>):
 
   const halfWidth = state.entities.bar.width / 2;
   state.entities.bar.x = clamp(mouseMove.x, halfWidth, state.field.width - halfWidth);
+  state.entities.bar.zeroPosition.x = state.entities.bar.x;
+  state.entities.bar.zeroPosition.y = state.entities.bar.y;
 }

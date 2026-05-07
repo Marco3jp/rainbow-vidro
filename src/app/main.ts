@@ -14,10 +14,17 @@ if (container === null) {
 const logger = createConsoleLogger();
 installErrorReporter(logger);
 
-const scene = new GameScene(new PixiRenderer());
-await scene.mount(container);
-
 const world = new World();
+const scene = new GameScene(new PixiRenderer(), {
+  onDebugValueChange: (key, value) => {
+    if (key === 'characterBallSpeed') {
+      world.state.entities.character.stats.ballSpeed = value;
+      return;
+    }
+    world.state.config[key] = value;
+  },
+});
+await scene.mount(container);
 const inputTarget = scene.getInputTarget() ?? container;
 
 function mapScreenToField(clientX: number, clientY: number): { x: number; y: number } {

@@ -6,6 +6,43 @@ interface PointerRenderable {
   setVisualPointer(point: { x: number; y: number } | null): void;
 }
 
+interface CollisionDebugRenderable {
+  setCollisionDebugVisible(visible: boolean): void;
+}
+
+type DebugTunableKey =
+  | 'slingChargeMaxMs'
+  | 'slingReleaseMs'
+  | 'slingPostFadeMs'
+  | 'slingArcMaxDepthPx'
+  | 'slingArcSegments'
+  | 'slingShotBaseSpeed'
+  | 'ballSpeed'
+  | 'characterBallSpeed';
+
+interface DebugControlOption {
+  onDebugValueChange?: (key: DebugTunableKey, value: number) => void;
+}
+
+interface DebugControlSpec {
+  key: DebugTunableKey;
+  label: string;
+  min: number;
+  max: number;
+  step: number;
+}
+
+const DEBUG_CONTROL_SPECS: DebugControlSpec[] = [
+  { key: 'slingChargeMaxMs', label: 'チャージ時間(ms)', min: 50, max: 500, step: 10 },
+  { key: 'slingReleaseMs', label: 'リリース時間(ms)', min: 30, max: 200, step: 5 },
+  { key: 'slingPostFadeMs', label: '残像フェード時間(ms)', min: 80, max: 300, step: 10 },
+  { key: 'slingArcMaxDepthPx', label: '弧深さ(px)', min: 20, max: 200, step: 2 },
+  { key: 'slingArcSegments', label: '弧分割数(N)', min: 4, max: 32, step: 1 },
+  { key: 'slingShotBaseSpeed', label: 'スリング射出速度', min: 100, max: 1200, step: 10 },
+  { key: 'ballSpeed', label: 'ボール基礎速度', min: 100, max: 1200, step: 10 },
+  { key: 'characterBallSpeed', label: 'ボール速度倍率', min: 0.5, max: 4, step: 0.05 },
+] as const;
+
 function clamp01(value: number): number {
   if (value < 0) {
     return 0;
@@ -45,8 +82,16 @@ export class GameScene implements Renderer {
   private blockHpAvgText: HTMLSpanElement | null = null;
   private characterStatsList: HTMLUListElement | null = null;
   private ballStateList: HTMLUListElement | null = null;
+  private collisionDebugToggle: HTMLInputElement | null = null;
+  private debugInputByKey = new Map<
+    DebugTunableKey,
+    { range: HTMLInputElement; number: HTMLInputElement }
+  >();
 
-  public constructor(private readonly renderer: Renderer) {}
+  public constructor(
+    private readonly renderer: Renderer,
+    private readonly options: DebugControlOption = {},
+  ) {}
 
   public async mount(container: HTMLElement): Promise<void> {
     const root = document.createElement('div');
@@ -109,6 +154,14 @@ export class GameScene implements Renderer {
         <div class="hud-row"><span>ボール数</span><span data-hud="ball-count-text"></span></div>
         <div class="hud-row"><span>平均ブロックHP</span><span data-hud="block-hp-avg-text"></span></div>
       </section>
+      <section class="hud-card">
+        <h2>デバッグ調整</h2>
+        <label class="hud-debug-toggle">
+          <input type="checkbox" data-hud="collision-debug-toggle" />
+          当たり判定矩形を表示
+        </label>
+        <div class="hud-debug" data-hud="debug-controls"></div>
+      </section>
       </div>
     `;
     root.append(fieldArea, hudLeft, hudRight);
@@ -133,6 +186,18 @@ export class GameScene implements Renderer {
     this.blockHpAvgText = root.querySelector('[data-hud="block-hp-avg-text"]');
     this.characterStatsList = root.querySelector('[data-hud="character-stats-list"]');
     this.ballStateList = root.querySelector('[data-hud="ball-state-list"]');
+    this.collisionDebugToggle = root.querySelector<HTMLInputElement>(
+      '[data-hud="collision-debug-toggle"]',
+    );
+    this.collisionDebugToggle?.addEventListener('change', () => {
+      if (this.isCollisionDebugRenderable(this.renderer)) {
+        this.renderer.setCollisionDebugVisible(this.collisionDebugToggle?.checked === true);
+      }
+    });
+    const debugControls = root.querySelector<HTMLElement>('[data-hud="debug-controls"]');
+    if (debugControls !== null) {
+      this.mountDebugControls(debugControls);
+    }
     await this.renderer.mount(fieldArea);
   }
 
@@ -148,6 +213,7 @@ export class GameScene implements Renderer {
   public render(prev: WorldSnapshot, curr: WorldSnapshot, alpha: number): void {
     this.renderer.render(prev, curr, alpha);
     this.updateHud(curr);
+    this.syncDebugControlValues(curr);
   }
 
   public getInputTarget(): HTMLElement | null {
@@ -292,11 +358,78 @@ export class GameScene implements Renderer {
     );
   }
 
+  private isCollisionDebugRenderable(
+    renderer: Renderer,
+  ): renderer is Renderer & CollisionDebugRenderable {
+    return 'setCollisionDebugVisible' in renderer;
+  }
+
   private formatNumber(value: number): string {
     return Number.isInteger(value) ? `${value}` : value.toFixed(2);
   }
 
   private formatPercent(value: number): string {
     return `${(value * 100).toFixed(1)}%`;
+  }
+
+  private mountDebugControls(container: HTMLElement): void {
+    container.replaceChildren();
+    for (const spec of DEBUG_CONTROL_SPECS) {
+      const row = document.createElement('div');
+      row.className = 'hud-debug__row';
+
+      const label = document.createElement('label');
+      label.className = 'hud-debug__label';
+      label.textContent = spec.label;
+
+      const range = document.createElement('input');
+      range.type = 'range';
+      range.min = `${spec.min}`;
+      range.max = `${spec.max}`;
+      range.step = `${spec.step}`;
+      range.dataset.debugKey = spec.key;
+
+      const number = document.createElement('input');
+      number.type = 'number';
+      number.min = `${spec.min}`;
+      number.max = `${spec.max}`;
+      number.step = `${spec.step}`;
+      number.dataset.debugKey = spec.key;
+
+      const onChange = (rawValue: string): void => {
+        const value = Number(rawValue);
+        if (!Number.isFinite(value)) {
+          return;
+        }
+        const clamped = Math.max(spec.min, Math.min(spec.max, value));
+        range.value = `${clamped}`;
+        number.value = `${clamped}`;
+        this.options.onDebugValueChange?.(spec.key, clamped);
+      };
+      range.addEventListener('input', () => onChange(range.value));
+      number.addEventListener('change', () => onChange(number.value));
+
+      row.append(label, range, number);
+      container.append(row);
+      this.debugInputByKey.set(spec.key, { range, number });
+    }
+  }
+
+  private syncDebugControlValues(snapshot: WorldSnapshot): void {
+    const valueByKey: Record<DebugTunableKey, number> = {
+      slingChargeMaxMs: snapshot.config.slingChargeMaxMs,
+      slingReleaseMs: snapshot.config.slingReleaseMs,
+      slingPostFadeMs: snapshot.config.slingPostFadeMs,
+      slingArcMaxDepthPx: snapshot.config.slingArcMaxDepthPx,
+      slingArcSegments: snapshot.config.slingArcSegments,
+      slingShotBaseSpeed: snapshot.config.slingShotBaseSpeed,
+      ballSpeed: snapshot.config.ballSpeed,
+      characterBallSpeed: snapshot.entities.character.stats.ballSpeed,
+    };
+    for (const [key, input] of this.debugInputByKey) {
+      const value = valueByKey[key];
+      input.range.value = `${value}`;
+      input.number.value = `${value}`;
+    }
   }
 }

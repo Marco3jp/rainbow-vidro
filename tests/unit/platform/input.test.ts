@@ -28,4 +28,17 @@ describe('MouseInputSource', () => {
 
     expect(source.poll()).toEqual([{ type: 'mousemove', x: 10, y: 10 }]);
   });
+
+  it('mouseup はターゲット外で離しても取得できる', () => {
+    const target = document.createElement('canvas');
+    const source = new MouseInputSource(target);
+
+    target.dispatchEvent(new MouseEvent('mousedown', { clientX: 100, clientY: 120 }));
+    window.dispatchEvent(new MouseEvent('mouseup', { clientX: 350, clientY: 420 }));
+
+    expect(source.poll()).toEqual([
+      { type: 'mousedown', x: 100, y: 120 },
+      { type: 'mouseup', x: 350, y: 420 },
+    ]);
+  });
 });
