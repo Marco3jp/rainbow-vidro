@@ -1,3 +1,5 @@
+import type { CharacterState } from '@/core/entities';
+
 export interface BallState {
   id: string;
   x: number;
@@ -19,11 +21,14 @@ export interface BarState {
 
 export interface BlockState {
   id: string;
+  kind: 'normal' | 'special' | 'boss' | 'bossCore';
   x: number;
   y: number;
   width: number;
   height: number;
   hp: number;
+  maxHp: number;
+  expReward: number;
 }
 
 export interface BossState {
@@ -31,17 +36,13 @@ export interface BossState {
   maxHp: number;
 }
 
-export interface CharacterState {
-  hp: number;
-  maxHp: number;
-  attackPower: number;
-}
-
 export interface WorldConfig {
   ballRadius: number;
   ballSpeed: number;
   wallDecayFactor: number;
   barBounceMaxAngleRad: number;
+  blockAdvanceSpeed: number;
+  blockReachDamage: number;
 }
 
 export interface WorldState {

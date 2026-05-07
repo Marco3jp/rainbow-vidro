@@ -1,8 +1,10 @@
 import '@/app/main.css';
 import { GameLoop } from '@/app/GameLoop';
+import { attachPointerPreview } from '@/app/pointerPreview';
 import { World } from '@/core/world';
 import { createConsoleLogger, installErrorReporter, MouseInputSource } from '@/platform';
 import { PixiRenderer } from '@/render/PixiRenderer';
+import { GameScene } from '@/ui';
 
 const container = document.querySelector<HTMLElement>('#app');
 if (container === null) {
@@ -12,14 +14,14 @@ if (container === null) {
 const logger = createConsoleLogger();
 installErrorReporter(logger);
 
-const renderer = new PixiRenderer();
-await renderer.mount(container);
+const scene = new GameScene(new PixiRenderer());
+await scene.mount(container);
 
 const world = new World();
-const canvas = renderer.getCanvas() ?? container;
+const inputTarget = scene.getInputTarget() ?? container;
 
 function mapScreenToField(clientX: number, clientY: number): { x: number; y: number } {
-  const rect = canvas.getBoundingClientRect();
+  const rect = inputTarget.getBoundingClientRect();
   const screenX = clientX - rect.left;
   const screenY = clientY - rect.top;
 
@@ -36,29 +38,18 @@ function mapScreenToField(clientX: number, clientY: number): { x: number; y: num
   };
 }
 
-const inputSource = new MouseInputSource(canvas, (x, y) => {
+const inputSource = new MouseInputSource(inputTarget, (x, y) => {
   return mapScreenToField(x, y);
 });
 
-const onMouseMove = (event: MouseEvent): void => {
-  const mapped = mapScreenToField(event.clientX, event.clientY);
-  renderer.setVisualBarTargetX(mapped.x);
-  renderer.setVisualPointer(mapped);
-};
-const onMouseLeave = (): void => {
-  renderer.setVisualBarTargetX(null);
-  renderer.setVisualPointer(null);
-};
-canvas.addEventListener('mousemove', onMouseMove);
-canvas.addEventListener('mouseleave', onMouseLeave);
+const disposePointerPreview = attachPointerPreview(inputTarget, mapScreenToField, scene);
 
-const gameLoop = new GameLoop(world, renderer, inputSource);
+const gameLoop = new GameLoop(world, scene, inputSource);
 gameLoop.start();
 
 window.addEventListener('beforeunload', () => {
-  canvas.removeEventListener('mousemove', onMouseMove);
-  canvas.removeEventListener('mouseleave', onMouseLeave);
+  disposePointerPreview();
   inputSource.dispose();
   gameLoop.stop();
-  renderer.unmount();
+  scene.unmount();
 });

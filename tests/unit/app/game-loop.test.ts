@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { type FrameScheduler, GameLoop, type TimeSource } from '@/app/GameLoop';
+import { charA, createCharacter } from '@/core';
 import type { World, WorldState } from '@/core/world';
 import type { InputSource } from '@/platform';
 import type { Renderer } from '@/render';
@@ -37,12 +38,19 @@ describe('GameLoop', () => {
       bar: { x: 0, y: 0, width: 100, height: 10, mode: 'normal' },
       blocks: [],
       boss: { hp: 10, maxHp: 10 },
-      character: { hp: 10, maxHp: 10, attackPower: 1 },
+      character: createCharacter(charA),
     },
     field: { width: 100, height: 100 },
     rngState: 0,
     nextBallId: 0,
-    config: { ballRadius: 8, ballSpeed: 300, wallDecayFactor: 0.85, barBounceMaxAngleRad: 1 },
+    config: {
+      ballRadius: 8,
+      ballSpeed: 300,
+      wallDecayFactor: 0.85,
+      barBounceMaxAngleRad: 1,
+      blockAdvanceSpeed: 24,
+      blockReachDamage: 1,
+    },
   });
 
   it('100ms 経過で期待 tick 数を実行する', () => {
