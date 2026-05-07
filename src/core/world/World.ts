@@ -67,7 +67,7 @@ function createInitialState(rng: SeededRng): WorldState {
     config: {
       ballRadius: 8,
       ballSpeed: 300,
-      wallDecayFactor: 0.85,
+      wallDecayFactor: 0.92,
       barBounceMaxAngleRad: Math.PI / 3,
       blockAdvanceSpeed: 24,
       blockReachDamage: 1,
@@ -78,9 +78,9 @@ function createInitialState(rng: SeededRng): WorldState {
       slingArcSegments: 12,
       slingShotBaseSpeed: 420,
       chargeFactorMin: 1,
-      chargeFactorMax: 2.5,
+      chargeFactorMax: 1.2,
       hitFactorMin: 1,
-      hitFactorMax: 2,
+      hitFactorMax: 1.2,
     },
   };
 }

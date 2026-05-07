@@ -11,6 +11,7 @@ export const charA: CharacterDefinition = {
     ballSpeed: 1,
     barReflectMultiplier: 1,
     chargeShotMultiplier: 1,
+    maxRetainedDamageMultiplier: 1.5,
     hpRegenPerSec: 0,
     manaRegenPerSec: 2,
     cdr: 0,

@@ -1,7 +1,7 @@
 import type { WorldState } from '@/core/world';
 import type { InputEvent } from '@/platform';
 
-import { calcChargeShotMultiplier } from './chargeShot';
+import { calcChargeShotMultiplier, clampDamageMultiplier } from './chargeShot';
 import { getReleaseProgress } from './slingMath';
 
 const SLING_HORIZONTAL_RANGE_MULTIPLIER = 2;
@@ -60,12 +60,10 @@ function launchBall(state: WorldState, ballId: string, hitProgress: number): voi
   ball.vx = dirX * baseSpeed;
   ball.vy = dirY * baseSpeed;
   ball.lastChargeHitProgress = hitProgress;
-  ball.damageMultiplier *= calcChargeShotMultiplier(
-    bar.releaseDepth,
-    hitProgress,
-    state.entities.character,
-    state.config,
-  );
+  const carried = clampDamageMultiplier(ball.damageMultiplier, state.entities.character);
+  ball.damageMultiplier =
+    carried *
+    calcChargeShotMultiplier(bar.releaseDepth, hitProgress, state.entities.character, state.config);
 }
 
 export function updateSlingControl(

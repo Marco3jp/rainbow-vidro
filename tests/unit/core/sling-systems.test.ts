@@ -4,6 +4,7 @@ import {
   calcChargeFactor,
   calcChargeShotMultiplier,
   calcHitFactor,
+  clampDamageMultiplier,
 } from '@/core/systems/chargeShot';
 
 const SLING_HORIZONTAL_RANGE_MULTIPLIER = 2;
@@ -46,9 +47,9 @@ function createTestState(): WorldState {
       slingArcSegments: 12,
       slingShotBaseSpeed: 420,
       chargeFactorMin: 1,
-      chargeFactorMax: 2.5,
+      chargeFactorMax: 1.2,
       hitFactorMin: 1,
-      hitFactorMax: 2,
+      hitFactorMax: 1.2,
     },
   };
 }
@@ -225,17 +226,17 @@ describe('スリングシステム', () => {
 
 describe('チャージショット倍率', () => {
   it('端点で min/max を返す', () => {
-    expect(calcChargeFactor(0, { chargeFactorMin: 1, chargeFactorMax: 2.5 })).toBe(1);
-    expect(calcChargeFactor(1, { chargeFactorMin: 1, chargeFactorMax: 2.5 })).toBe(2.5);
-    expect(calcHitFactor(0, { hitFactorMin: 1, hitFactorMax: 2 })).toBe(1);
-    expect(calcHitFactor(1, { hitFactorMin: 1, hitFactorMax: 2 })).toBe(2);
+    expect(calcChargeFactor(0, { chargeFactorMin: 1, chargeFactorMax: 1.2 })).toBe(1);
+    expect(calcChargeFactor(1, { chargeFactorMin: 1, chargeFactorMax: 1.2 })).toBe(1.2);
+    expect(calcHitFactor(0, { hitFactorMin: 1, hitFactorMax: 1.2 })).toBe(1);
+    expect(calcHitFactor(1, { hitFactorMin: 1, hitFactorMax: 1.2 })).toBe(1.2);
   });
 
   it('中間値を線形補間し、キャラ倍率を乗算する', () => {
     const state = createTestState();
     state.entities.character.stats.chargeShotMultiplier = 1.2;
     const multiplier = calcChargeShotMultiplier(0.5, 0.25, state.entities.character, state.config);
-    expect(multiplier).toBeCloseTo(1.75 * 1.25 * 1.2);
+    expect(multiplier).toBeCloseTo(1.1 * 1.05 * 1.2);
   });
 
   it('火力ランキングに沿う係数関係を満たす', () => {
@@ -244,5 +245,72 @@ describe('チャージショット倍率', () => {
     const maxPower = state.config.chargeFactorMax * state.config.hitFactorMax;
     expect(minPower).toBeGreaterThanOrEqual(1);
     expect(maxPower).toBeGreaterThan(minPower);
+  });
+});
+
+describe('持ち越し倍率と保持最大倍率', () => {
+  it('clampDamageMultiplier はキャラの保持最大倍率を上限とする', () => {
+    const character = createCharacter(charA);
+    character.stats.maxRetainedDamageMultiplier = 1.5;
+    expect(clampDamageMultiplier(1.2, character)).toBe(1.2);
+    expect(clampDamageMultiplier(1.5, character)).toBe(1.5);
+    expect(clampDamageMultiplier(2.0736, character)).toBe(1.5);
+  });
+
+  it('持ち越し倍率がcap以下のときはそのまま使い、結果はチャージ/ヒット倍率で伸びる', () => {
+    const state = createTestState();
+    state.entities.bar.mode = 'charging';
+    state.entities.bar.arc.depth = 1;
+    state.entities.bar.arc.dirX = 0;
+    state.entities.bar.arc.dirY = 1;
+    state.entities.bar.attachedBallIds = ['ball-1'];
+    const ball = createBall({ id: 'ball-1', x: 200, y: 108, vx: 0, vy: 0, radius: 8 });
+    ball.damageMultiplier = 1.0;
+    state.entities.balls = [ball];
+    const world = new World({ seed: 1, initialState: state });
+    world.tick(1000 / 60, [{ type: 'mouseup', x: 200, y: 120 }]);
+    // releaseDepth=1 → chargeFactor=chargeFactorMax=1.2、hitProgress=0 → hitFactor=hitFactorMin=1
+    // キャラの chargeShotMultiplier = 1 のため、結果 = 1.0 × 1.2 × 1.0 × 1.0 = 1.2
+    expect(world.state.entities.balls[0]?.damageMultiplier).toBeCloseTo(1.0 * 1.2);
+  });
+
+  it('持ち越し倍率がcapを超えるときはショット計算入力をcapに丸めるが、結果はcapを超えうる', () => {
+    const state = createTestState();
+    state.entities.bar.mode = 'charging';
+    state.entities.bar.arc.depth = 1;
+    state.entities.bar.arc.dirX = 0;
+    state.entities.bar.arc.dirY = 1;
+    state.entities.bar.attachedBallIds = ['ball-1'];
+    const ball = createBall({ id: 'ball-1', x: 200, y: 108, vx: 0, vy: 0, radius: 8 });
+    ball.damageMultiplier = 2.0;
+    state.entities.balls = [ball];
+    const cap = state.entities.character.stats.maxRetainedDamageMultiplier;
+    const world = new World({ seed: 1, initialState: state });
+    world.tick(1000 / 60, [{ type: 'mouseup', x: 200, y: 120 }]);
+    const result = world.state.entities.balls[0]?.damageMultiplier ?? 0;
+    // 持ち越し2.0 → cap (1.5) に丸める → 1.5 × chargeFactor(1.2) × hitFactor(1.0) × charaMult(1.0) = 1.8
+    expect(result).toBeCloseTo(cap * 1.2);
+    expect(result).toBeGreaterThan(cap);
+  });
+
+  it('リリース戻り中に弧で射出する場合も持ち越しがcapで丸まり、結果はcapを超えうる', () => {
+    const state = createTestState();
+    state.tickCount = 20;
+    state.entities.bar.mode = 'releasing';
+    state.entities.bar.releaseStartTick = 18;
+    state.entities.bar.releaseDepth = 1;
+    state.entities.bar.releaseDirX = 0;
+    state.entities.bar.releaseDirY = 1;
+    state.entities.bar.arc.depth = 0.5;
+    const ball = createBall({ id: 'ball-1', x: 200, y: 220, vx: 0, vy: 0, radius: 8 });
+    ball.damageMultiplier = 2.0;
+    state.entities.balls = [ball];
+    const cap = state.entities.character.stats.maxRetainedDamageMultiplier;
+    const world = new World({ seed: 1, initialState: state });
+    world.tick(1000 / 60, []);
+    const result = world.state.entities.balls[0]?.damageMultiplier ?? 0;
+    expect(result).toBeGreaterThan(cap);
+    // 結果の上限 = cap × chargeFactorMax × hitFactorMax × キャラ chargeShotMultiplier(=1)
+    expect(result).toBeLessThanOrEqual(cap * 1.2 * 1.2 + 1e-9);
   });
 });
