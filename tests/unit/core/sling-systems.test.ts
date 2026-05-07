@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { charA, createBall, createCharacter, World, type WorldState } from '@/core';
-import { calcChargeFactor, calcChargeShotMultiplier, calcHitFactor } from '@/core/systems/chargeShot';
+import {
+  calcChargeFactor,
+  calcChargeShotMultiplier,
+  calcHitFactor,
+} from '@/core/systems/chargeShot';
 
 const SLING_HORIZONTAL_RANGE_MULTIPLIER = 2;
 
@@ -94,8 +98,12 @@ describe('スリングシステム', () => {
     lowYWorld.tick(1000 / 60, [{ type: 'mousedown', x: 200, y: 220 }]);
     lowYWorld.tick(1000 / 60, [{ type: 'mousemove', x: 260, y: 230 }]);
 
-    expect(highYWorld.state.entities.bar.arc.dirX).toBeCloseTo(lowYWorld.state.entities.bar.arc.dirX);
-    expect(highYWorld.state.entities.bar.arc.dirY).toBeCloseTo(lowYWorld.state.entities.bar.arc.dirY);
+    expect(highYWorld.state.entities.bar.arc.dirX).toBeCloseTo(
+      lowYWorld.state.entities.bar.arc.dirX,
+    );
+    expect(highYWorld.state.entities.bar.arc.dirY).toBeCloseTo(
+      lowYWorld.state.entities.bar.arc.dirY,
+    );
     expect(highYWorld.state.entities.bar.arc.dirY).toBeGreaterThan(0);
   });
 
@@ -167,7 +175,9 @@ describe('スリングシステム', () => {
     state.entities.bar.releaseDirX = 0;
     state.entities.bar.releaseDirY = 1;
     state.entities.bar.arc.depth = 0.5;
-    state.entities.balls = [createBall({ id: 'ball-1', x: 200, y: 220, vx: -10, vy: 20, radius: 8 })];
+    state.entities.balls = [
+      createBall({ id: 'ball-1', x: 200, y: 220, vx: -10, vy: 20, radius: 8 }),
+    ];
     const world = new World({ seed: 1, initialState: state });
     world.tick(1000 / 60, []);
     const ball = world.state.entities.balls[0];
@@ -201,7 +211,9 @@ describe('スリングシステム', () => {
     state.entities.bar.arc.depth = 1;
     state.entities.bar.arc.dirX = 0;
     state.entities.bar.arc.dirY = 1;
-    state.entities.balls = [createBall({ id: 'ball-1', x: 200, y: 160, vx: 0, vy: -60, radius: 8 })];
+    state.entities.balls = [
+      createBall({ id: 'ball-1', x: 200, y: 160, vx: 0, vy: -60, radius: 8 }),
+    ];
     const world = new World({ seed: 1, initialState: state });
     const beforeY = world.state.entities.balls[0]?.y ?? 0;
     world.tick(1000 / 60, []);
@@ -223,7 +235,7 @@ describe('チャージショット倍率', () => {
     const state = createTestState();
     state.entities.character.stats.chargeShotMultiplier = 1.2;
     const multiplier = calcChargeShotMultiplier(0.5, 0.25, state.entities.character, state.config);
-    expect(multiplier).toBeCloseTo((1.75 * 1.25) * 1.2);
+    expect(multiplier).toBeCloseTo(1.75 * 1.25 * 1.2);
   });
 
   it('火力ランキングに沿う係数関係を満たす', () => {
@@ -234,4 +246,3 @@ describe('チャージショット倍率', () => {
     expect(maxPower).toBeGreaterThan(minPower);
   });
 });
-

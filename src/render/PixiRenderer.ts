@@ -248,7 +248,9 @@ export class PixiRenderer implements Renderer {
       });
     }
     if (bar.mode === 'normal' && this.postReleaseFadeMs > 0) {
-      const postFadeProgress = clamp01(this.postReleaseFadeMs / Math.max(1, curr.config.slingPostFadeMs));
+      const postFadeProgress = clamp01(
+        this.postReleaseFadeMs / Math.max(1, curr.config.slingPostFadeMs),
+      );
       const postFadeAlpha = 0.6 * postFadeProgress;
       g.rect(
         offsetX + (bar.zeroPosition.x - bar.width / 2) * scale,
@@ -348,16 +350,21 @@ export class PixiRenderer implements Renderer {
       return;
     }
 
-    const centerX = bar.zeroPosition.x + calcHorizontalOffset(
-      bar.mode,
-      bar.arc.dirX,
-      bar.arc.depth,
-      bar.releaseDepth,
-      snapshot.config.slingArcMaxDepthPx,
-    );
+    const centerX =
+      bar.zeroPosition.x +
+      calcHorizontalOffset(
+        bar.mode,
+        bar.arc.dirX,
+        bar.arc.depth,
+        bar.releaseDepth,
+        snapshot.config.slingArcMaxDepthPx,
+      );
     const centerY =
       bar.zeroPosition.y +
-      bar.arc.dirY * snapshot.config.slingArcMaxDepthPx * SLING_ARC_DEPTH_MULTIPLIER * bar.arc.depth;
+      bar.arc.dirY *
+        snapshot.config.slingArcMaxDepthPx *
+        SLING_ARC_DEPTH_MULTIPLIER *
+        bar.arc.depth;
     const start = { x: bar.zeroPosition.x - bar.zeroPosition.width / 2, y: bar.zeroPosition.y };
     const control = { x: centerX, y: centerY };
     const end = { x: bar.zeroPosition.x + bar.zeroPosition.width / 2, y: bar.zeroPosition.y };

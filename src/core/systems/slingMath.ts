@@ -26,7 +26,8 @@ export function getReleaseProgress(state: WorldState): number {
 }
 
 function calcHorizontalOffset(state: WorldState, bar: BarState): number {
-  const horizontalMax = bar.arc.dirX * state.config.slingArcMaxDepthPx * SLING_HORIZONTAL_RANGE_MULTIPLIER;
+  const horizontalMax =
+    bar.arc.dirX * state.config.slingArcMaxDepthPx * SLING_HORIZONTAL_RANGE_MULTIPLIER;
   if (bar.mode !== 'releasing') {
     return horizontalMax;
   }
@@ -58,7 +59,8 @@ function calcHorizontalOffsetFromParams(
 }
 
 export function getArcCenter(state: WorldState, bar: BarState): { x: number; y: number } {
-  const verticalOffset = bar.arc.depth * state.config.slingArcMaxDepthPx * SLING_ARC_DEPTH_MULTIPLIER;
+  const verticalOffset =
+    bar.arc.depth * state.config.slingArcMaxDepthPx * SLING_ARC_DEPTH_MULTIPLIER;
   const horizontalOffset = calcHorizontalOffset(state, bar);
   return {
     x: bar.zeroPosition.x + horizontalOffset,
@@ -136,7 +138,14 @@ export function isPointTouchingArc(
       x: mt * mt * start.x + 2 * mt * t * control.x + t * t * end.x,
       y: mt * mt * start.y + 2 * mt * t * control.y + t * t * end.y,
     };
-    const nearest = nearestPointOnSegment(params.x, params.y, prevPoint.x, prevPoint.y, point.x, point.y);
+    const nearest = nearestPointOnSegment(
+      params.x,
+      params.y,
+      prevPoint.x,
+      prevPoint.y,
+      point.x,
+      point.y,
+    );
     const dx = params.x - nearest.x;
     const dy = params.y - nearest.y;
     const allowed = params.radius + arcThickness;

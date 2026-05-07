@@ -34,7 +34,11 @@ function normalizeVector(x: number, y: number): { x: number; y: number } {
   return { x: x / length, y: y / length };
 }
 
-function calcSlingDirectionFromPointerX(pointerX: number, zeroX: number, maxDepthPx: number): {
+function calcSlingDirectionFromPointerX(
+  pointerX: number,
+  zeroX: number,
+  maxDepthPx: number,
+): {
   x: number;
   y: number;
 } {

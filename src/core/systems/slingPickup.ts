@@ -30,7 +30,10 @@ export function updateSlingPickup(state: WorldState): void {
   const dtSeconds = stepMs / 1000;
   const releaseProgressStart =
     bar.mode === 'releasing'
-      ? Math.max(0, (releaseProgress * state.config.slingReleaseMs - stepMs) / state.config.slingReleaseMs)
+      ? Math.max(
+          0,
+          (releaseProgress * state.config.slingReleaseMs - stepMs) / state.config.slingReleaseMs,
+        )
       : releaseProgress;
   const depthStart =
     bar.mode === 'releasing' ? releaseDepth * (1 - releaseProgressStart) : bar.arc.depth;
@@ -52,10 +55,16 @@ export function updateSlingPickup(state: WorldState): void {
     const startX = ball.x - ball.vx * dtSeconds;
     const startY = ball.y - ball.vy * dtSeconds;
     const ballMovePx = Math.hypot(ball.x - startX, ball.y - startY);
-    const arcMovePx = Math.hypot(arcEndCenter.x - arcStartCenter.x, arcEndCenter.y - arcStartCenter.y);
+    const arcMovePx = Math.hypot(
+      arcEndCenter.x - arcStartCenter.x,
+      arcEndCenter.y - arcStartCenter.y,
+    );
     const subSteps = Math.max(
       1,
-      Math.min(COLLISION_MAX_SUBSTEPS, Math.ceil(Math.max(ballMovePx, arcMovePx) / COLLISION_TARGET_STEP_PX)),
+      Math.min(
+        COLLISION_MAX_SUBSTEPS,
+        Math.ceil(Math.max(ballMovePx, arcMovePx) / COLLISION_TARGET_STEP_PX),
+      ),
     );
     let touched = false;
     let touchedProgress = releaseProgress;
