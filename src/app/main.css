@@ -126,6 +126,34 @@ body {
   gap: 6px;
 }
 
+.hud-debug {
+  display: grid;
+  gap: 8px;
+}
+
+.hud-debug__row {
+  display: grid;
+  gap: 4px;
+}
+
+.hud-debug__label {
+  font-size: 11px;
+  color: #cbd5e1;
+}
+
+.hud-debug__row input[type="range"] {
+  width: 100%;
+}
+
+.hud-debug__row input[type="number"] {
+  border: 1px solid #475569;
+  border-radius: 6px;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 12px;
+  padding: 4px 6px;
+}
+
 .game-scene__hud button {
   border: 1px solid #475569;
   border-radius: 6px;

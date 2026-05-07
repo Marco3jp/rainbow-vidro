@@ -1,5 +1,7 @@
 import type { BallState, BarState, WorldState } from '@/core/world';
 
+const SLING_HORIZONTAL_RANGE_MULTIPLIER = 2;
+
 function clamp01(value: number): number {
   if (value < 0) {
     return 0;
@@ -20,11 +22,25 @@ export function getReleaseProgress(state: WorldState): number {
   return clamp01(elapsedMs / state.config.slingReleaseMs);
 }
 
+function calcHorizontalOffset(state: WorldState, bar: BarState): number {
+  const horizontalMax = bar.arc.dirX * state.config.slingArcMaxDepthPx * SLING_HORIZONTAL_RANGE_MULTIPLIER;
+  if (bar.mode !== 'releasing') {
+    return horizontalMax;
+  }
+  const releaseDepth = bar.releaseDepth ?? 0;
+  if (releaseDepth <= 1e-6) {
+    return 0;
+  }
+  const t = clamp01(bar.arc.depth / releaseDepth);
+  return horizontalMax * t;
+}
+
 export function getArcCenter(state: WorldState, bar: BarState): { x: number; y: number } {
-  const offset = bar.arc.depth * state.config.slingArcMaxDepthPx;
+  const verticalOffset = bar.arc.depth * state.config.slingArcMaxDepthPx;
+  const horizontalOffset = calcHorizontalOffset(state, bar);
   return {
-    x: bar.zeroPosition.x + bar.arc.dirX * offset,
-    y: bar.zeroPosition.y + bar.arc.dirY * offset,
+    x: bar.zeroPosition.x + horizontalOffset,
+    y: bar.zeroPosition.y + bar.arc.dirY * verticalOffset,
   };
 }
 

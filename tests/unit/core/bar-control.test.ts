@@ -34,6 +34,7 @@ function createTestState(): WorldState {
       blockReachDamage: 1,
       slingChargeMaxMs: 200,
       slingReleaseMs: 80,
+      slingPostFadeMs: 140,
       slingArcMaxDepthPx: 72,
       slingShotBaseSpeed: 420,
       chargeFactorMin: 1,

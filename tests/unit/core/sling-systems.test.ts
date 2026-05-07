@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { charA, createBall, createCharacter, World, type WorldState } from '@/core';
 import { calcChargeFactor, calcChargeShotMultiplier, calcHitFactor } from '@/core/systems/chargeShot';
 
+const SLING_HORIZONTAL_RANGE_MULTIPLIER = 2;
+
 function createTestState(): WorldState {
   return {
     tickCount: 0,
@@ -35,6 +37,7 @@ function createTestState(): WorldState {
       blockReachDamage: 1,
       slingChargeMaxMs: 200,
       slingReleaseMs: 80,
+      slingPostFadeMs: 140,
       slingArcMaxDepthPx: 72,
       slingShotBaseSpeed: 420,
       chargeFactorMin: 1,
@@ -57,6 +60,17 @@ describe('スリングシステム', () => {
     }
     expect(world.state.entities.bar.arc.depth).toBeCloseTo(1, 4);
     expect(world.state.entities.bar.arc.depth).toBeLessThanOrEqual(1);
+  });
+
+  it('チャージ開始時に前回の向きを引き継がず、mousedown位置で向きが初期化される', () => {
+    const state = createTestState();
+    state.entities.bar.arc.dirX = 0.8;
+    state.entities.bar.arc.dirY = 0.6;
+    const world = new World({ seed: 1, initialState: state });
+    world.tick(1000 / 60, [{ type: 'mousedown', x: 200, y: 20 }]);
+    expect(world.state.entities.bar.mode).toBe('charging');
+    expect(world.state.entities.bar.arc.dirX).toBeCloseTo(0);
+    expect(world.state.entities.bar.arc.dirY).toBeCloseTo(1);
   });
 
   it('mouseup で releasing に遷移する', () => {
@@ -82,6 +96,18 @@ describe('スリングシステム', () => {
     expect(highYWorld.state.entities.bar.arc.dirX).toBeCloseTo(lowYWorld.state.entities.bar.arc.dirX);
     expect(highYWorld.state.entities.bar.arc.dirY).toBeCloseTo(lowYWorld.state.entities.bar.arc.dirY);
     expect(highYWorld.state.entities.bar.arc.dirY).toBeGreaterThan(0);
+  });
+
+  it('チャージ中のスリング中心XはカーソルXに追従する', () => {
+    const world = new World({ seed: 1, initialState: createTestState() });
+    world.tick(1000 / 60, [{ type: 'mousedown', x: 248, y: 20 }]);
+    world.tick(1000 / 60, [{ type: 'mousemove', x: 260, y: 220 }]);
+    const centerX =
+      world.state.entities.bar.zeroPosition.x +
+      world.state.entities.bar.arc.dirX *
+        world.state.config.slingArcMaxDepthPx *
+        SLING_HORIZONTAL_RANGE_MULTIPLIER;
+    expect(centerX).toBeCloseTo(260, 2);
   });
 
   it('チャージ中接触で停止し attachedBallIds に入る', () => {

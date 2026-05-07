@@ -59,6 +59,7 @@ export interface WorldConfig {
   blockReachDamage: number;
   slingChargeMaxMs: number;
   slingReleaseMs: number;
+  slingPostFadeMs: number;
   slingArcMaxDepthPx: number;
   slingShotBaseSpeed: number;
   chargeFactorMin: number;

@@ -4,6 +4,8 @@ import type { InputEvent } from '@/platform';
 import { calcChargeShotMultiplier } from './chargeShot';
 import { getReleaseProgress } from './slingMath';
 
+const SLING_HORIZONTAL_RANGE_MULTIPLIER = 2;
+
 function clamp01(value: number): number {
   if (value < 0) {
     return 0;
@@ -14,12 +16,31 @@ function clamp01(value: number): number {
   return value;
 }
 
-function normalizeDirectionFromHorizontal(dx: number): { x: number; y: number } {
-  const length = Math.hypot(dx, 1);
-  if (length <= 1e-6) {
-    return { x: 0, y: 1 };
+function clamp(value: number, min: number, max: number): number {
+  if (value < min) {
+    return min;
   }
-  return { x: dx / length, y: 1 / length };
+  if (value > max) {
+    return max;
+  }
+  return value;
+}
+
+function normalizeVector(x: number, y: number): { x: number; y: number } {
+  const length = Math.hypot(x, y);
+  if (length <= 1e-6) {
+    return { x: 0, y: -1 };
+  }
+  return { x: x / length, y: y / length };
+}
+
+function calcSlingDirectionFromPointerX(pointerX: number, zeroX: number, maxDepthPx: number): {
+  x: number;
+  y: number;
+} {
+  const safeMaxDepth = Math.max(1, maxDepthPx * SLING_HORIZONTAL_RANGE_MULTIPLIER);
+  const horizontal = clamp((pointerX - zeroX) / safeMaxDepth, -1, 1);
+  return { x: horizontal, y: 1 };
 }
 
 function launchBall(state: WorldState, ballId: string, hitProgress: number): void {
@@ -28,8 +49,9 @@ function launchBall(state: WorldState, ballId: string, hitProgress: number): voi
   if (ball === undefined || bar.releaseDepth === undefined) {
     return;
   }
-  const dirX = -(bar.releaseDirX ?? 0);
-  const dirY = -(bar.releaseDirY ?? 1);
+  const releaseVector = normalizeVector(bar.releaseDirX ?? 0, bar.releaseDirY ?? 1);
+  const dirX = -releaseVector.x;
+  const dirY = -releaseVector.y;
   const baseSpeed = state.config.slingShotBaseSpeed * state.entities.character.stats.ballSpeed;
   ball.vx = dirX * baseSpeed;
   ball.vy = dirY * baseSpeed;
@@ -56,7 +78,9 @@ export function updateSlingControl(
     height: fieldBar.height,
   };
 
-  const latestMove = [...inputs].reverse().find((input) => input.type === 'mousemove');
+  const latestPointer = [...inputs]
+    .reverse()
+    .find((input) => input.type === 'mousemove' || input.type === 'mousedown');
   const hasMouseDown = inputs.some((input) => input.type === 'mousedown');
   const hasMouseUp = inputs.some((input) => input.type === 'mouseup');
 
@@ -64,11 +88,29 @@ export function updateSlingControl(
     bar.mode = 'charging';
     bar.chargeStartTick = state.tickCount;
     bar.attachedBallIds = [];
+    // mousedown の時点で方向を初期化して、前回チャージの向きを持ち越さない。
+    const pointerOnDown = [...inputs].reverse().find((input) => input.type === 'mousedown');
+    if (pointerOnDown !== undefined) {
+      const direction = calcSlingDirectionFromPointerX(
+        pointerOnDown.x,
+        bar.zeroPosition.x,
+        state.config.slingArcMaxDepthPx,
+      );
+      bar.arc.dirX = direction.x;
+      bar.arc.dirY = direction.y;
+    } else {
+      bar.arc.dirX = 0;
+      bar.arc.dirY = 1;
+    }
   }
 
   if (bar.mode === 'charging') {
-    if (latestMove !== undefined) {
-      const direction = normalizeDirectionFromHorizontal(latestMove.x - bar.zeroPosition.x);
+    if (latestPointer !== undefined) {
+      const direction = calcSlingDirectionFromPointerX(
+        latestPointer.x,
+        bar.zeroPosition.x,
+        state.config.slingArcMaxDepthPx,
+      );
       bar.arc.dirX = direction.x;
       bar.arc.dirY = direction.y;
     }

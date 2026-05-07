@@ -4,6 +4,42 @@ import type { WorldSnapshot } from '@/core/world';
 
 import type { Renderer } from './Renderer';
 
+const SLING_HORIZONTAL_RANGE_MULTIPLIER = 2;
+const FIXED_STEP_MS = 1000 / 60;
+
+function clamp01(value: number): number {
+  if (value < 0) {
+    return 0;
+  }
+  if (value > 1) {
+    return 1;
+  }
+  return value;
+}
+
+function lerp(from: number, to: number, t: number): number {
+  return from + (to - from) * t;
+}
+
+function calcHorizontalOffset(
+  mode: WorldSnapshot['entities']['bar']['mode'],
+  dirX: number,
+  depth: number,
+  releaseDepth: number | undefined,
+  maxDepth: number,
+): number {
+  const horizontalMax = maxDepth * SLING_HORIZONTAL_RANGE_MULTIPLIER * dirX;
+  if (mode !== 'releasing') {
+    return horizontalMax;
+  }
+  const safeReleaseDepth = releaseDepth ?? 0;
+  if (safeReleaseDepth <= 1e-6) {
+    return 0;
+  }
+  const t = clamp01(depth / safeReleaseDepth);
+  return horizontalMax * t;
+}
+
 export class PixiRenderer implements Renderer {
   private app: Application | null = null;
   private container: HTMLElement | null = null;
@@ -11,6 +47,8 @@ export class PixiRenderer implements Renderer {
   private visualBarTargetX: number | null = null;
   private visualPointer: { x: number; y: number } | null = null;
   private cursorGraphics: Graphics | null = null;
+  private postReleaseFadeMs = 0;
+  private prevBarMode: WorldSnapshot['entities']['bar']['mode'] = 'normal';
 
   public async mount(container: HTMLElement): Promise<void> {
     this.container = container;
@@ -38,6 +76,8 @@ export class PixiRenderer implements Renderer {
     this.visualBarTargetX = null;
     this.visualPointer = null;
     this.cursorGraphics = null;
+    this.postReleaseFadeMs = 0;
+    this.prevBarMode = 'normal';
   }
 
   public resize(width: number, height: number): void {
@@ -78,6 +118,16 @@ export class PixiRenderer implements Renderer {
 
     const g = this.worldLayer;
     g.clear();
+    const barMode = curr.entities.bar.mode;
+    if (this.prevBarMode === 'releasing' && barMode === 'normal') {
+      this.postReleaseFadeMs = curr.config.slingPostFadeMs;
+    }
+    if (barMode !== 'normal') {
+      this.postReleaseFadeMs = 0;
+    } else if (this.postReleaseFadeMs > 0) {
+      this.postReleaseFadeMs = Math.max(0, this.postReleaseFadeMs - FIXED_STEP_MS);
+    }
+    this.prevBarMode = barMode;
     const width = this.app.renderer.width;
     const height = this.app.renderer.height;
     const scale = Math.min(width / curr.field.width, height / curr.field.height);
@@ -102,25 +152,77 @@ export class PixiRenderer implements Renderer {
       this.visualBarTargetX === null
         ? simulatedBarX
         : Math.max(minBarX, Math.min(maxBarX, this.visualBarTargetX));
-    g.rect(
-      offsetX + (barX - bar.width / 2) * scale,
-      offsetY + (barY - bar.height / 2) * scale,
-      bar.width * scale,
-      bar.height * scale,
-    ).fill(new Color('#60a5fa'));
-    if (bar.mode !== 'normal' && bar.arc.depth > 0) {
-      const arcOffset = curr.config.slingArcMaxDepthPx * bar.arc.depth;
-      const arcX = bar.zeroPosition.x + bar.arc.dirX * arcOffset;
-      const arcY = bar.zeroPosition.y + bar.arc.dirY * arcOffset;
+    const prevReleaseToNormal = prevBar.mode === 'releasing' && bar.mode === 'normal';
+    const displayMode = prevReleaseToNormal ? 'releasing' : bar.mode;
+    if (displayMode === 'normal') {
+      g.rect(
+        offsetX + (barX - bar.width / 2) * scale,
+        offsetY + (barY - bar.height / 2) * scale,
+        bar.width * scale,
+        bar.height * scale,
+      ).fill(new Color('#60a5fa'));
+    } else {
+      const guideAlpha = displayMode === 'releasing' ? 0.62 : 0.5;
+      // チャージ/リリース中は通常バーを消し、現在カーソル基準の予告位置を薄く表示する。
+      g.rect(
+        offsetX + (barX - bar.width / 2) * scale,
+        offsetY + (barY - bar.height / 2) * scale,
+        bar.width * scale,
+        bar.height * scale,
+      )
+        .fill({ color: new Color('#60a5fa'), alpha: guideAlpha })
+        .stroke({ color: new Color('#93c5fd'), width: 1, alpha: guideAlpha + 0.1 });
+    }
+    const displayDepth = prevReleaseToNormal
+      ? lerp(prevBar.arc.depth, 0, alpha)
+      : lerp(prevBar.arc.depth, bar.arc.depth, alpha);
+    const displayDirX = lerp(prevBar.arc.dirX, bar.arc.dirX, alpha);
+    const displayDirY = lerp(prevBar.arc.dirY, bar.arc.dirY, alpha);
+    if (displayMode !== 'normal' && displayDepth > 0) {
+      const verticalOffset = curr.config.slingArcMaxDepthPx * displayDepth;
+      const displayReleaseDepth = prevReleaseToNormal
+        ? prevBar.releaseDepth
+        : alpha < 1
+          ? prevBar.releaseDepth
+          : bar.releaseDepth;
+      const horizontalOffset = calcHorizontalOffset(
+        displayMode,
+        displayDirX,
+        displayDepth,
+        displayReleaseDepth,
+        curr.config.slingArcMaxDepthPx,
+      );
+      const arcX = bar.zeroPosition.x + horizontalOffset;
+      const arcY = bar.zeroPosition.y + displayDirY * verticalOffset;
+      const slingColor = displayMode === 'charging' ? new Color('#c084fc') : new Color('#f472b6');
+      const slingAlpha = displayMode === 'charging' ? 0.95 : 0.9;
+      const slingZeroAlpha = displayMode === 'charging' ? 0.3 : 0.38;
+      // スリング側のゼロ位置ガイド。
+      g.rect(
+        offsetX + (bar.zeroPosition.x - bar.width / 2) * scale,
+        offsetY + (bar.zeroPosition.y - bar.height / 2) * scale,
+        bar.width * scale,
+        bar.height * scale,
+      ).fill({ color: slingColor, alpha: slingZeroAlpha });
       g.rect(
         offsetX + (arcX - bar.width / 2) * scale,
         offsetY + (arcY - bar.height / 2) * scale,
         bar.width * scale,
         bar.height * scale,
-      ).fill(new Color('#c084fc'));
+      ).fill({ color: slingColor, alpha: slingAlpha });
       g.moveTo(offsetX + bar.zeroPosition.x * scale, offsetY + bar.zeroPosition.y * scale)
         .lineTo(offsetX + arcX * scale, offsetY + arcY * scale)
-        .stroke({ color: new Color('#c084fc'), width: 2 });
+        .stroke({ color: slingColor, width: 2, alpha: Math.max(0.12, slingAlpha * 0.8) });
+    }
+    if (bar.mode === 'normal' && this.postReleaseFadeMs > 0) {
+      const postFadeProgress = clamp01(this.postReleaseFadeMs / Math.max(1, curr.config.slingPostFadeMs));
+      const postFadeAlpha = 0.6 * postFadeProgress;
+      g.rect(
+        offsetX + (bar.zeroPosition.x - bar.width / 2) * scale,
+        offsetY + (bar.zeroPosition.y - bar.height / 2) * scale,
+        bar.width * scale,
+        bar.height * scale,
+      ).fill({ color: new Color('#f472b6'), alpha: postFadeAlpha });
     }
 
     // Balls (interpolated by id)

@@ -7,6 +7,14 @@ function removeAttachedId(list: string[], id: string): string[] {
   return list.filter((value) => value !== id);
 }
 
+function normalizeVector(x: number, y: number): { x: number; y: number } {
+  const length = Math.hypot(x, y);
+  if (length <= 1e-6) {
+    return { x: 0, y: -1 };
+  }
+  return { x: x / length, y: y / length };
+}
+
 export function updateSlingPickup(state: WorldState): void {
   const bar = state.entities.bar;
   if (bar.mode !== 'charging' && bar.mode !== 'releasing') {
@@ -36,8 +44,9 @@ export function updateSlingPickup(state: WorldState): void {
     if (ball.lastChargeHitProgress !== undefined) {
       continue;
     }
-    const dirX = -(bar.releaseDirX ?? 0);
-    const dirY = -(bar.releaseDirY ?? 1);
+    const releaseVector = normalizeVector(bar.releaseDirX ?? 0, bar.releaseDirY ?? 1);
+    const dirX = -releaseVector.x;
+    const dirY = -releaseVector.y;
     const speed = state.config.slingShotBaseSpeed * state.entities.character.stats.ballSpeed;
     ball.vx = dirX * speed;
     ball.vy = dirY * speed;
