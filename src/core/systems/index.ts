@@ -5,5 +5,7 @@ export * from './blockCollision';
 export * from './damage';
 export * from './movement';
 export * from './playerDamage';
+export * from './slingControl';
+export * from './slingPickup';
 export * from './wallReflection';
 export * from './winLoseCheck';

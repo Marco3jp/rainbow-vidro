@@ -108,6 +108,20 @@ export class PixiRenderer implements Renderer {
       bar.width * scale,
       bar.height * scale,
     ).fill(new Color('#60a5fa'));
+    if (bar.mode !== 'normal' && bar.arc.depth > 0) {
+      const arcOffset = curr.config.slingArcMaxDepthPx * bar.arc.depth;
+      const arcX = bar.zeroPosition.x + bar.arc.dirX * arcOffset;
+      const arcY = bar.zeroPosition.y + bar.arc.dirY * arcOffset;
+      g.rect(
+        offsetX + (arcX - bar.width / 2) * scale,
+        offsetY + (arcY - bar.height / 2) * scale,
+        bar.width * scale,
+        bar.height * scale,
+      ).fill(new Color('#c084fc'));
+      g.moveTo(offsetX + bar.zeroPosition.x * scale, offsetY + bar.zeroPosition.y * scale)
+        .lineTo(offsetX + arcX * scale, offsetY + arcY * scale)
+        .stroke({ color: new Color('#c084fc'), width: 2 });
+    }
 
     // Balls (interpolated by id)
     const prevBalls = new Map(prev.entities.balls.map((ball) => [ball.id, ball]));

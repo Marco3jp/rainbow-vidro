@@ -9,6 +9,8 @@ import { advanceBlocks } from '@/core/systems/blockAdvance';
 import { updateBlockCollision } from '@/core/systems/blockCollision';
 import { updateBalls } from '@/core/systems/movement';
 import { applyBlockReachedDamage } from '@/core/systems/playerDamage';
+import { updateSlingControl } from '@/core/systems/slingControl';
+import { updateSlingPickup } from '@/core/systems/slingPickup';
 import { updateWallReflection } from '@/core/systems/wallReflection';
 import { updateWinLosePhase } from '@/core/systems/winLoseCheck';
 import { createMulberry32, type InputEvent, type SeededRng, SimClock } from '@/platform';
@@ -69,6 +71,14 @@ function createInitialState(rng: SeededRng): WorldState {
       barBounceMaxAngleRad: Math.PI / 3,
       blockAdvanceSpeed: 24,
       blockReachDamage: 1,
+      slingChargeMaxMs: 200,
+      slingReleaseMs: 80,
+      slingArcMaxDepthPx: 72,
+      slingShotBaseSpeed: 420,
+      chargeFactorMin: 1,
+      chargeFactorMax: 2.5,
+      hitFactorMin: 1,
+      hitFactorMax: 2,
     },
   };
 }
@@ -102,8 +112,10 @@ export class World {
       updateBar(this.state, inputs);
       updateBalls(this.state, stepMs);
       updateWallReflection(this.state);
-      updateBarReflection(this.state);
+      updateSlingControl(this.state, inputs, stepMs);
+      updateSlingPickup(this.state);
       updateBlockCollision(this.state);
+      updateBarReflection(this.state);
       advanceBlocks(this.state, stepMs);
       applyBlockReachedDamage(this.state);
       updateWinLosePhase(this.state);

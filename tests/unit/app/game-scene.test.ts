@@ -32,7 +32,16 @@ function createSnapshot(): WorldSnapshot {
     phase: 'playing',
     entities: {
       balls: [],
-      bar: { x: 200, y: 180, width: 100, height: 20, mode: 'normal' },
+      bar: {
+        x: 200,
+        y: 180,
+        width: 100,
+        height: 20,
+        zeroPosition: { x: 200, y: 180, width: 100, height: 20 },
+        arc: { dirX: 0, dirY: -1, depth: 0 },
+        mode: 'normal',
+        attachedBallIds: [],
+      },
       blocks: [],
       boss: { hp: 90, maxHp: 120 },
       character: createCharacter(charA),
@@ -47,6 +56,14 @@ function createSnapshot(): WorldSnapshot {
       barBounceMaxAngleRad: 1,
       blockAdvanceSpeed: 24,
       blockReachDamage: 1,
+      slingChargeMaxMs: 200,
+      slingReleaseMs: 80,
+      slingArcMaxDepthPx: 72,
+      slingShotBaseSpeed: 420,
+      chargeFactorMin: 1,
+      chargeFactorMax: 2.5,
+      hitFactorMin: 1,
+      hitFactorMax: 2,
     },
   };
 }

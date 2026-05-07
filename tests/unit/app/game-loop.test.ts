@@ -35,7 +35,16 @@ describe('GameLoop', () => {
     phase: 'playing',
     entities: {
       balls: [],
-      bar: { x: 0, y: 0, width: 100, height: 10, mode: 'normal' },
+      bar: {
+        x: 0,
+        y: 0,
+        width: 100,
+        height: 10,
+        zeroPosition: { x: 0, y: 0, width: 100, height: 10 },
+        arc: { dirX: 0, dirY: -1, depth: 0 },
+        mode: 'normal',
+        attachedBallIds: [],
+      },
       blocks: [],
       boss: { hp: 10, maxHp: 10 },
       character: createCharacter(charA),
@@ -50,6 +59,14 @@ describe('GameLoop', () => {
       barBounceMaxAngleRad: 1,
       blockAdvanceSpeed: 24,
       blockReachDamage: 1,
+      slingChargeMaxMs: 200,
+      slingReleaseMs: 80,
+      slingArcMaxDepthPx: 72,
+      slingShotBaseSpeed: 420,
+      chargeFactorMin: 1,
+      chargeFactorMax: 2.5,
+      hitFactorMin: 1,
+      hitFactorMax: 2,
     },
   });
 

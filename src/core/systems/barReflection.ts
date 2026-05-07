@@ -12,7 +12,7 @@ function clamp(value: number, min: number, max: number): number {
 
 export function updateBarReflection(state: WorldState): void {
   const bar = state.entities.bar;
-  if (bar.mode === 'charging') {
+  if (bar.mode !== 'normal') {
     return;
   }
 
