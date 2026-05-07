@@ -1,5 +1,6 @@
 import type { WorldState } from '@/core/world';
 
+import { calcChargeShotMultiplier } from './chargeShot';
 import { getReleaseProgress, isBallTouchingArc } from './slingMath';
 
 function removeAttachedId(list: string[], id: string): string[] {
@@ -38,5 +39,11 @@ export function updateSlingPickup(state: WorldState): void {
     ball.vx = dirX * speed;
     ball.vy = dirY * speed;
     ball.lastChargeHitProgress = releaseProgress;
+    ball.damageMultiplier *= calcChargeShotMultiplier(
+      releaseDepth,
+      releaseProgress,
+      state.entities.character,
+      state.config,
+    );
   }
 }

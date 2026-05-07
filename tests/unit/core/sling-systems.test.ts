@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { charA, createBall, createCharacter, World, type WorldState } from '@/core';
+import { calcChargeFactor, calcChargeShotMultiplier, calcHitFactor } from '@/core/systems/chargeShot';
 
 function createTestState(): WorldState {
   return {
@@ -146,6 +147,30 @@ describe('スリングシステム', () => {
     const after = world.state.entities.balls[0];
     expect(after?.y).toBeLessThan(beforeY);
     expect(world.state.entities.bar.attachedBallIds).toHaveLength(0);
+  });
+});
+
+describe('チャージショット倍率', () => {
+  it('端点で min/max を返す', () => {
+    expect(calcChargeFactor(0, { chargeFactorMin: 1, chargeFactorMax: 2.5 })).toBe(1);
+    expect(calcChargeFactor(1, { chargeFactorMin: 1, chargeFactorMax: 2.5 })).toBe(2.5);
+    expect(calcHitFactor(0, { hitFactorMin: 1, hitFactorMax: 2 })).toBe(1);
+    expect(calcHitFactor(1, { hitFactorMin: 1, hitFactorMax: 2 })).toBe(2);
+  });
+
+  it('中間値を線形補間し、キャラ倍率を乗算する', () => {
+    const state = createTestState();
+    state.entities.character.stats.chargeShotMultiplier = 1.2;
+    const multiplier = calcChargeShotMultiplier(0.5, 0.25, state.entities.character, state.config);
+    expect(multiplier).toBeCloseTo((1.75 * 1.25) * 1.2);
+  });
+
+  it('火力ランキングに沿う係数関係を満たす', () => {
+    const state = createTestState();
+    const minPower = state.config.chargeFactorMin * state.config.hitFactorMin;
+    const maxPower = state.config.chargeFactorMax * state.config.hitFactorMax;
+    expect(minPower).toBeGreaterThanOrEqual(1);
+    expect(maxPower).toBeGreaterThan(minPower);
   });
 });
 

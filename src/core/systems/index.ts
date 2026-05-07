@@ -2,6 +2,7 @@ export * from './barControl';
 export * from './barReflection';
 export * from './blockAdvance';
 export * from './blockCollision';
+export * from './chargeShot';
 export * from './damage';
 export * from './movement';
 export * from './playerDamage';
