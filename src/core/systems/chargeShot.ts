@@ -37,3 +37,12 @@ export function calcChargeShotMultiplier(
   const hitFactor = calcHitFactor(hitProgress, config);
   return chargeFactor * hitFactor * character.stats.chargeShotMultiplier;
 }
+
+/**
+ * ボールが保持できるダメージ倍率の上限 (キャラの `maxRetainedDamageMultiplier`) で
+ * 値を丸める純粋関数。チャージショット倍率の累積を抑えるために使用する。
+ */
+export function clampDamageMultiplier(value: number, character: CharacterState): number {
+  const cap = character.stats.maxRetainedDamageMultiplier;
+  return value < cap ? value : cap;
+}

@@ -78,9 +78,9 @@ function createInitialState(rng: SeededRng): WorldState {
       slingArcSegments: 12,
       slingShotBaseSpeed: 420,
       chargeFactorMin: 1,
-      chargeFactorMax: 2.5,
+      chargeFactorMax: 1.2,
       hitFactorMin: 1,
-      hitFactorMax: 2,
+      hitFactorMax: 1.2,
     },
   };
 }

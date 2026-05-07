@@ -7,6 +7,11 @@ export interface CharacterStats {
   ballSpeed: number;
   barReflectMultiplier: number;
   chargeShotMultiplier: number;
+  /**
+   * 1ボールが保持できるダメージ倍率の上限。
+   * チャージショット等で倍率を乗算した結果がこの値を超える場合は、ここで丸める。
+   */
+  maxRetainedDamageMultiplier: number;
   hpRegenPerSec: number;
   manaRegenPerSec: number;
   cdr: number;

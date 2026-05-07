@@ -1,6 +1,6 @@
 import type { WorldState } from '@/core/world';
 
-import { calcChargeShotMultiplier } from './chargeShot';
+import { calcChargeShotMultiplier, clampDamageMultiplier } from './chargeShot';
 import { getArcCenterFromParams, getReleaseProgress, isPointTouchingArc } from './slingMath';
 
 const COLLISION_TARGET_STEP_PX = 5;
@@ -117,11 +117,14 @@ export function updateSlingPickup(state: WorldState): void {
     ball.vx = dirX * speed;
     ball.vy = dirY * speed;
     ball.lastChargeHitProgress = touchedProgress;
-    ball.damageMultiplier *= calcChargeShotMultiplier(
-      releaseDepth,
-      touchedProgress,
-      state.entities.character,
-      state.config,
-    );
+    const next =
+      ball.damageMultiplier *
+      calcChargeShotMultiplier(
+        releaseDepth,
+        touchedProgress,
+        state.entities.character,
+        state.config,
+      );
+    ball.damageMultiplier = clampDamageMultiplier(next, state.entities.character);
   }
 }
