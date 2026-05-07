@@ -28,7 +28,7 @@ function createTestState(): WorldState {
     config: {
       ballRadius: 8,
       ballSpeed: 300,
-      wallDecayFactor: 0.85,
+      wallDecayFactor: 0.92,
       barBounceMaxAngleRad: 1,
       blockAdvanceSpeed: 24,
       blockReachDamage: 1,
@@ -57,7 +57,7 @@ describe('壁反射', () => {
     const reflected = world.state.entities.balls[0];
     expect(reflected?.vx).toBeGreaterThan(0);
     expect(reflected?.vy).toBeGreaterThan(0);
-    expect(reflected?.damageMultiplier).toBeCloseTo(1.7);
+    expect(reflected?.damageMultiplier).toBeCloseTo(1.84);
   });
 
   it('下壁で倍率が 1.0 になる', () => {

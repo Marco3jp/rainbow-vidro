@@ -67,7 +67,7 @@ function createInitialState(rng: SeededRng): WorldState {
     config: {
       ballRadius: 8,
       ballSpeed: 300,
-      wallDecayFactor: 0.85,
+      wallDecayFactor: 0.92,
       barBounceMaxAngleRad: Math.PI / 3,
       blockAdvanceSpeed: 24,
       blockReachDamage: 1,
