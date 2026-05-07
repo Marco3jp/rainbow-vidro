@@ -60,10 +60,10 @@ function launchBall(state: WorldState, ballId: string, hitProgress: number): voi
   ball.vx = dirX * baseSpeed;
   ball.vy = dirY * baseSpeed;
   ball.lastChargeHitProgress = hitProgress;
-  const next =
-    ball.damageMultiplier *
+  const carried = clampDamageMultiplier(ball.damageMultiplier, state.entities.character);
+  ball.damageMultiplier =
+    carried *
     calcChargeShotMultiplier(bar.releaseDepth, hitProgress, state.entities.character, state.config);
-  ball.damageMultiplier = clampDamageMultiplier(next, state.entities.character);
 }
 
 export function updateSlingControl(

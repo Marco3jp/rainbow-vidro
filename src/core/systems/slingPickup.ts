@@ -117,14 +117,14 @@ export function updateSlingPickup(state: WorldState): void {
     ball.vx = dirX * speed;
     ball.vy = dirY * speed;
     ball.lastChargeHitProgress = touchedProgress;
-    const next =
-      ball.damageMultiplier *
+    const carried = clampDamageMultiplier(ball.damageMultiplier, state.entities.character);
+    ball.damageMultiplier =
+      carried *
       calcChargeShotMultiplier(
         releaseDepth,
         touchedProgress,
         state.entities.character,
         state.config,
       );
-    ball.damageMultiplier = clampDamageMultiplier(next, state.entities.character);
   }
 }

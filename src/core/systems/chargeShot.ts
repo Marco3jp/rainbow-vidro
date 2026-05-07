@@ -39,8 +39,12 @@ export function calcChargeShotMultiplier(
 }
 
 /**
- * ボールが保持できるダメージ倍率の上限 (キャラの `maxRetainedDamageMultiplier`) で
- * 値を丸める純粋関数。チャージショット倍率の累積を抑えるために使用する。
+ * ボールが「次の反射に持ち越せるダメージ倍率」の上限 (キャラの `maxRetainedDamageMultiplier`) で
+ * 値を丸める純粋関数。チャージショット計算の入力 (= 持ち越し倍率) に対して用いる。
+ *
+ * - 計算式: `(持ち越し倍率) × (chargeFactor) × (hitFactor) × (キャラ chargeShotMultiplier)`
+ * - 持ち越し倍率はこのキャップで丸めるが、**ショット計算結果はキャップを超えうる**
+ * - 計算結果は壁反射などで減衰し、次のショット時に再びこのキャップで丸められる
  */
 export function clampDamageMultiplier(value: number, character: CharacterState): number {
   const cap = character.stats.maxRetainedDamageMultiplier;
